@@ -1,0 +1,73 @@
+import { ReactNode } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { Scissors, LayoutDashboard, ShoppingBag, Calendar, MessageCircle, Users, LogOut, Settings } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+const DashboardLayout = ({ children }: { children: ReactNode }) => {
+  const { role, signOut, user } = useAuth();
+  const location = useLocation();
+  const isStaff = role === 'super_admin' || role === 'admin' || role === 'sub_admin';
+
+  const clientLinks = [
+    { to: '/dashboard/client', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/dashboard/client/orders', icon: ShoppingBag, label: 'My Orders' },
+    { to: '/dashboard/client/new-request', icon: Scissors, label: 'New Request' },
+    { to: '/dashboard/client/appointments', icon: Calendar, label: 'Appointments' },
+    { to: '/dashboard/client/messages', icon: MessageCircle, label: 'Messages' },
+  ];
+
+  const staffLinks = [
+    { to: '/dashboard/admin', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/dashboard/admin/orders', icon: ShoppingBag, label: 'Orders' },
+    { to: '/dashboard/admin/appointments', icon: Calendar, label: 'Appointments' },
+    { to: '/dashboard/admin/messages', icon: MessageCircle, label: 'Messages' },
+    ...(role === 'super_admin' ? [{ to: '/dashboard/admin/staff', icon: Users, label: 'Staff' }] : []),
+  ];
+
+  const links = isStaff ? staffLinks : clientLinks;
+
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Top bar */}
+      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border px-4 h-14 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Scissors className="h-5 w-5 text-primary" />
+          <span className="font-serif text-lg font-bold text-foreground">Salem</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground capitalize">{role?.replace('_', ' ')}</span>
+          <Button variant="ghost" size="icon" onClick={signOut}>
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
+      </header>
+
+      {/* Content */}
+      <main className="flex-1 pb-20 px-4 py-4">
+        {children}
+      </main>
+
+      {/* Bottom nav */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border px-2 py-1 flex justify-around z-40">
+        {links.slice(0, 5).map(link => {
+          const active = location.pathname === link.to;
+          return (
+            <Link
+              key={link.to}
+              to={link.to}
+              className={`flex flex-col items-center py-1.5 px-2 rounded-md transition-colors ${
+                active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <link.icon className="h-5 w-5" />
+              <span className="text-[10px] mt-0.5 font-medium">{link.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+    </div>
+  );
+};
+
+export default DashboardLayout;
