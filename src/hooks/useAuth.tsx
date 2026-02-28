@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, useRef, createContext, useContext, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { AppRole, getUserRole } from '@/lib/supabase-helpers';
@@ -24,24 +24,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
+  const initializedRef = useRef(false);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        // Use setTimeout to avoid Supabase auth deadlock
-        setTimeout(async () => {
-          const r = await getUserRole(session.user.id);
-          setRole(r);
-          setLoading(false);
-        }, 0);
-      } else {
-        setRole(null);
-        setLoading(false);
-      }
-    });
-
+    // First get the current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -49,9 +35,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         getUserRole(session.user.id).then(r => {
           setRole(r);
           setLoading(false);
+          initializedRef.current = true;
         });
       } else {
         setLoading(false);
+        initializedRef.current = true;
+      }
+    });
+
+    // Then listen for auth changes (sign in, sign out, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      // Skip the initial event — getSession handles that
+      if (!initializedRef.current) return;
+
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        setTimeout(async () => {
+          const r = await getUserRole(session.user.id);
+          setRole(r);
+        }, 0);
+      } else {
+        setRole(null);
       }
     });
 
