@@ -87,7 +87,7 @@ const ClientAppointments = () => {
           <h1 className="font-serif text-2xl font-bold text-foreground">Appointments</h1>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button size="sm"><Plus className="h-4 w-4 mr-1" /> Book</Button>
+              <Button size="sm" variant="outline" className="border-primary text-primary font-semibold"><Plus className="h-4 w-4 mr-1" /> Book</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
