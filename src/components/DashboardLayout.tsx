@@ -1,12 +1,13 @@
 import { ReactNode } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { Scissors, LayoutDashboard, ShoppingBag, Calendar, MessageCircle, Users, LogOut, Settings } from 'lucide-react';
+import { Scissors, LayoutDashboard, ShoppingBag, Calendar, MessageCircle, Users, LogOut, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const { role, signOut, user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const isStaff = role === 'super_admin' || role === 'admin' || role === 'sub_admin';
 
   const clientLinks = [
@@ -26,14 +27,23 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   ];
 
   const links = isStaff ? staffLinks : clientLinks;
+  const dashboardHome = isStaff ? '/dashboard/admin' : '/dashboard/client';
+  const isOnDashboardHome = location.pathname === dashboardHome;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Top bar */}
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Scissors className="h-5 w-5 text-primary" />
-          <span className="font-serif text-lg font-bold text-foreground">Salem</span>
+          {!isOnDashboardHome && (
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          )}
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <Scissors className="h-5 w-5 text-primary" />
+            <span className="font-serif text-lg font-bold text-foreground">Salem</span>
+          </Link>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground capitalize">{role?.replace('_', ' ')}</span>
