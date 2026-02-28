@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Scissors, Calendar, MessageCircle, ArrowRight, Star, MapPin, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
 import heroBg from '@/assets/hero-bg.jpg';
 
 const services = [
@@ -14,6 +15,8 @@ const services = [
 ];
 
 const Index = () => {
+  const { user, role } = useAuth();
+  const dashboardLink = user ? (role === 'client' ? '/dashboard/client' : '/dashboard/admin') : null;
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -24,12 +27,20 @@ const Index = () => {
             <span className="font-serif text-lg font-bold text-foreground">Salem Tailors</span>
           </Link>
           <div className="flex items-center gap-2">
-            <Link to="/auth">
-              <Button variant="ghost" size="sm">Sign In</Button>
-            </Link>
-            <Link to="/auth?tab=register">
-              <Button size="sm">Get Started</Button>
-            </Link>
+            {user ? (
+              <Link to={dashboardLink || '/dashboard/client'}>
+                <Button size="sm">Go to Dashboard</Button>
+              </Link>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="ghost" size="sm">Sign In</Button>
+                </Link>
+                <Link to="/auth?tab=register">
+                  <Button size="sm">Get Started</Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
