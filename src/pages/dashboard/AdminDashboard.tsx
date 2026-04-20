@@ -257,10 +257,40 @@ const AdminDashboard = () => {
               {role?.replace('_', ' ')} · Live analytics & insights
             </p>
           </div>
-          <Badge variant="outline" className="gap-1.5">
-            <Activity className="h-3 w-3 text-accent animate-pulse" />
-            <span className="text-xs">Live</span>
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
+              <span className="text-xs">Live</span>
+            </Badge>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" variant="outline" className="gap-2">
+                  <Download className="h-4 w-4" />
+                  Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 bg-popover">
+                <DropdownMenuLabel>Download as CSV</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={exportOrders} className="gap-2 cursor-pointer">
+                  <ShoppingBag className="h-4 w-4" /> Orders ({orders.length})
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={exportAppointments} className="gap-2 cursor-pointer">
+                  <Calendar className="h-4 w-4" /> Appointments ({appointments.length})
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={exportClients} className="gap-2 cursor-pointer">
+                  <Users className="h-4 w-4" /> Clients ({profiles.length})
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => { exportOrders(); exportAppointments(); exportClients(); }}
+                  className="gap-2 cursor-pointer"
+                >
+                  <FileDown className="h-4 w-4" /> Export all
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         {/* Top KPI Cards */}
