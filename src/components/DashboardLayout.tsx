@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { Scissors, LayoutDashboard, ShoppingBag, Calendar, MessageCircle, Users, LogOut, ArrowLeft } from 'lucide-react';
+import { Scissors, LayoutDashboard, ShoppingBag, Calendar, MessageCircle, Users, LogOut, ArrowLeft, Settings as SettingsIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
@@ -45,9 +45,14 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
             <span className="font-serif text-lg font-bold text-foreground">Salem</span>
           </Link>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground capitalize">{role?.replace('_', ' ')}</span>
-          <Button variant="ghost" size="icon" onClick={signOut}>
+        <div className="flex items-center gap-1">
+          <span className="text-xs text-muted-foreground capitalize hidden sm:inline">{role?.replace('_', ' ')}</span>
+          <Link to="/dashboard/settings">
+            <Button variant="ghost" size="icon" title="Settings">
+              <SettingsIcon className="h-4 w-4" />
+            </Button>
+          </Link>
+          <Button variant="ghost" size="icon" onClick={signOut} title="Sign out">
             <LogOut className="h-4 w-4" />
           </Button>
         </div>
