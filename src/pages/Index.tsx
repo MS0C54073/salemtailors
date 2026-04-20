@@ -72,7 +72,8 @@ const Index = () => {
                 </Button>
               </Link>
               <a href="https://wa.me/260979287496" target="_blank" rel="noopener noreferrer">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
+                <Button size="lg" className="w-full sm:w-auto bg-[#25D366] hover:bg-[#1ebe57] text-white shadow-warm gap-2 border-0">
+                  <MessageCircle className="h-4 w-4" />
                   Chat on WhatsApp
                 </Button>
               </a>
