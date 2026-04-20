@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Book from "./pages/Book";
 import NotFound from "./pages/NotFound";
 import ClientDashboard from "./pages/dashboard/ClientDashboard";
 import ClientOrders from "./pages/dashboard/ClientOrders";
@@ -29,6 +30,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/book" element={<Book />} />
             <Route path="/auth" element={<Auth />} />
 
             {/* Client Routes */}
