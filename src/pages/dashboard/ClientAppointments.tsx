@@ -59,7 +59,27 @@ const ClientAppointments = () => {
     if (error) {
       toast.error('Failed to book appointment');
     } else {
-      toast.success('Appointment booked!');
+      toast.success('Appointment booked! Opening WhatsApp...');
+
+      // Build WhatsApp message with booking details
+      const typeLabel = APPOINTMENT_TYPES.find(t => t.value === form.type)?.label || form.type;
+      const formattedDate = new Date(scheduledAt).toLocaleString('en-GB', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+      const clientName = user.user_metadata?.full_name || user.email || 'Client';
+      const messageLines = [
+        `*New Appointment Booking - Salem Tailors*`,
+        ``,
+        `*Client:* ${clientName}`,
+        `*Type:* ${typeLabel}`,
+        `*Date & Time:* ${formattedDate}`,
+      ];
+      if (form.notes) messageLines.push(`*Notes:* ${form.notes}`);
+      const waMessage = encodeURIComponent(messageLines.join('\n'));
+      const waUrl = `https://wa.me/260979287496?text=${waMessage}`;
+      window.open(waUrl, '_blank', 'noopener,noreferrer');
+
       setOpen(false);
       setForm({ type: '', date: '', time: '', notes: '' });
       fetchAppointments();
