@@ -29,18 +29,12 @@ const Index = () => {
           <div className="flex items-center gap-2">
             {user ? (
               <Link to={dashboardLink || '/dashboard/client'}>
-                <Button size="sm">Go to Dashboard</Button>
+                <Button variant="ghost" size="sm">Dashboard</Button>
               </Link>
-            ) : (
-              <>
-                <Link to="/auth">
-                  <Button variant="ghost" size="sm">Sign In</Button>
-                </Link>
-                <Link to="/auth?tab=register">
-                  <Button size="sm">Get Started</Button>
-                </Link>
-              </>
-            )}
+            ) : null}
+            <Link to="/book">
+              <Button size="sm">Book Now</Button>
+            </Link>
           </div>
         </div>
       </header>
@@ -72,16 +66,16 @@ const Index = () => {
               From chitenge to couture — tailored just for you.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
-              <Link to="/auth?tab=register">
+              <Link to="/book">
                 <Button size="lg" className="w-full sm:w-auto bg-primary hover:bg-primary/90 shadow-warm gap-2">
-                  Request a Garment <ArrowRight className="h-4 w-4" />
+                  Book an Appointment <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link to="/auth">
+              <a href="https://wa.me/260979287496" target="_blank" rel="noopener noreferrer">
                 <Button size="lg" variant="outline" className="w-full sm:w-auto border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
-                  Book Appointment
+                  Chat on WhatsApp
                 </Button>
-              </Link>
+              </a>
             </div>
           </motion.div>
         </div>
