@@ -5,15 +5,21 @@ import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { getStatusInfo, getCategoryLabel, ORDER_STATUSES, GARMENT_CATEGORIES } from '@/lib/supabase-helpers';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import { getStatusInfo, getCategoryLabel, ORDER_STATUSES } from '@/lib/supabase-helpers';
+import { toCSV, downloadCSV } from '@/lib/csv-export';
 import {
   ShoppingBag, Calendar, AlertTriangle, Clock, TrendingUp, Users, DollarSign,
-  Activity, CheckCircle2, ArrowUpRight, Sparkles
+  Activity, ArrowUpRight, Sparkles, Download, FileDown,
 } from 'lucide-react';
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   BarChart, Bar, PieChart, Pie, Cell, Legend
 } from 'recharts';
+import { toast } from 'sonner';
 
 const CATEGORY_COLORS = ['#D97706', '#F59E0B', '#EA580C', '#DC2626', '#92400E', '#B45309', '#78350F', '#451A03', '#7C2D12'];
 
@@ -29,7 +35,6 @@ const AdminDashboard = () => {
     if (!user) return;
 
     const fetchData = async () => {
-      setLoading(true);
       let query = supabase.from('garment_requests').select('*').order('created_at', { ascending: false });
       if (role === 'sub_admin') {
         query = query.eq('assigned_to', user.id);
@@ -50,7 +55,83 @@ const AdminDashboard = () => {
     };
 
     fetchData();
+
+    // Realtime subscriptions — refetch on changes & toast key events
+    const channel = supabase
+      .channel('admin-dashboard')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'garment_requests' }, payload => {
+        fetchData();
+        if (payload.eventType === 'INSERT') {
+          toast.info('New order received', { description: getCategoryLabel((payload.new as any).category) });
+        } else if (payload.eventType === 'UPDATE') {
+          const oldStatus = (payload.old as any)?.status;
+          const newStatus = (payload.new as any)?.status;
+          if (oldStatus && newStatus && oldStatus !== newStatus) {
+            toast.success('Order status updated', { description: getStatusInfo(newStatus).label });
+          }
+        }
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, () => fetchData())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'profiles' }, payload => {
+        fetchData();
+        toast.info('New client registered', { description: (payload.new as any).full_name });
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => fetchData())
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user, role]);
+
+  // === CSV Exports ===
+  const exportOrders = () => {
+    const rows = orders.map(o => ({
+      id: o.id,
+      created_at: o.created_at,
+      category: getCategoryLabel(o.category),
+      description: o.description,
+      status: getStatusInfo(o.status).label,
+      event_date: o.event_date,
+      estimated_cost: o.estimated_cost,
+      client_id: o.client_id,
+      assigned_to: o.assigned_to,
+      notes: o.notes,
+    }));
+    if (rows.length === 0) return toast.error('No orders to export');
+    downloadCSV('salem_orders.csv', toCSV(rows));
+    toast.success(`Exported ${rows.length} orders`);
+  };
+
+  const exportAppointments = () => {
+    const rows = appointments.map(a => ({
+      id: a.id,
+      scheduled_at: a.scheduled_at,
+      appointment_type: a.appointment_type,
+      status: a.status,
+      client_id: a.client_id,
+      garment_request_id: a.garment_request_id,
+      notes: a.notes,
+      created_at: a.created_at,
+    }));
+    if (rows.length === 0) return toast.error('No appointments to export');
+    downloadCSV('salem_appointments.csv', toCSV(rows));
+    toast.success(`Exported ${rows.length} appointments`);
+  };
+
+  const exportClients = () => {
+    const rows = profiles.map(p => ({
+      id: p.id,
+      user_id: p.user_id,
+      full_name: p.full_name,
+      phone: p.phone,
+      email: p.email,
+      created_at: p.created_at,
+    }));
+    if (rows.length === 0) return toast.error('No clients to export');
+    downloadCSV('salem_clients.csv', toCSV(rows));
+    toast.success(`Exported ${rows.length} clients`);
+  };
 
   // === Stats calculations ===
   const stats = useMemo(() => {
