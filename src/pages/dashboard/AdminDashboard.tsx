@@ -141,6 +141,7 @@ const AdminDashboard = () => {
   const stats = useMemo(() => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
     const weekStart = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
     const urgentDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
@@ -150,6 +151,15 @@ const AdminDashboard = () => {
     const completedRevenue = orders
       .filter(o => ['completed', 'ready_for_pickup'].includes(o.status))
       .reduce((sum, o) => sum + (Number(o.estimated_cost) || 0), 0);
+
+    const todayIncome = payments
+      .filter(p => { const d = new Date(p.paid_at); return d >= today && d < tomorrow; })
+      .reduce((s, p) => s + Number(p.amount), 0);
+
+    const todayApts = appointments.filter(a => {
+      const d = new Date(a.scheduled_at);
+      return d >= today && d < tomorrow;
+    });
 
     return {
       total: orders.length,
@@ -161,10 +171,12 @@ const AdminDashboard = () => {
       urgent: orders.filter(o => o.event_date && new Date(o.event_date) <= urgentDate && !['completed', 'ready_for_pickup'].includes(o.status)).length,
       clients: profiles.length,
       upcomingApts: appointments.filter(a => new Date(a.scheduled_at) >= now).length,
+      todayApts: todayApts.length,
+      todayIncome,
       totalRevenue,
       completedRevenue,
     };
-  }, [orders, appointments, profiles]);
+  }, [orders, appointments, profiles, payments]);
 
   // === Bookings over time (last 14 days) ===
   const bookingsTimeSeries = useMemo(() => {
