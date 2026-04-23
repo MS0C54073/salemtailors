@@ -162,6 +162,40 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Featured Portfolio */}
+      {featured.length > 0 && (
+        <section className="py-16 px-4 bg-card">
+          <div className="container">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-8"
+            >
+              <h2 className="font-serif text-3xl font-bold text-foreground mb-2">Our Work</h2>
+              <p className="text-muted-foreground">A glimpse of garments we've crafted</p>
+            </motion.div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {featured.map((item, i) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.05 }}
+                  className="aspect-square rounded-lg overflow-hidden border border-border shadow-sm group relative"
+                >
+                  <img src={item.image_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/80 to-transparent p-2">
+                    <p className="text-xs font-semibold text-primary-foreground truncate">{item.title}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Location / Map */}
       <section className="py-16 px-4">
         <div className="container max-w-4xl">
