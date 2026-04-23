@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Scissors, Calendar, MessageCircle, ArrowRight, Star, MapPin, Phone, Navigation, PhoneCall } from 'lucide-react';
+import { Scissors, Calendar, MessageCircle, ArrowRight, Star, MapPin, Phone, Navigation, PhoneCall, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import heroBg from '@/assets/hero-bg.jpg';
 
 const PHONE_NUMBERS = ['+260979287496', '+260978097202'];
@@ -23,7 +24,19 @@ const services = [
 const Index = () => {
   const { user, role } = useAuth();
   const [contactPhone, setContactPhone] = useState<string | null>(null);
+  const [featured, setFeatured] = useState<any[]>([]);
   const dashboardLink = user ? (role === 'client' ? '/dashboard/client' : '/dashboard/admin') : null;
+
+  useEffect(() => {
+    supabase
+      .from('portfolio_items')
+      .select('*')
+      .eq('is_featured', true)
+      .order('display_order', { ascending: true })
+      .limit(8)
+      .then(({ data }) => setFeatured(data || []));
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -149,6 +162,40 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Featured Portfolio */}
+      {featured.length > 0 && (
+        <section className="py-16 px-4 bg-card">
+          <div className="container">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-8"
+            >
+              <h2 className="font-serif text-3xl font-bold text-foreground mb-2">Our Work</h2>
+              <p className="text-muted-foreground">A glimpse of garments we've crafted</p>
+            </motion.div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {featured.map((item, i) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.05 }}
+                  className="aspect-square rounded-lg overflow-hidden border border-border shadow-sm group relative"
+                >
+                  <img src={item.image_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/80 to-transparent p-2">
+                    <p className="text-xs font-semibold text-primary-foreground truncate">{item.title}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Location / Map */}
       <section className="py-16 px-4">
         <div className="container max-w-4xl">
@@ -241,8 +288,16 @@ const Index = () => {
               </div>
             </div>
           </div>
-          <div className="border-t border-primary-foreground/10 mt-6 pt-4 text-center text-xs text-primary-foreground/40">
-            © 2026 Salem Tailors. All rights reserved.
+          <div className="border-t border-primary-foreground/10 mt-6 pt-4 flex items-center justify-between text-xs text-primary-foreground/40">
+            <span>© 2026 Salem Tailors. All rights reserved.</span>
+            <Link
+              to="/admin"
+              title="Admin"
+              aria-label="Admin login"
+              className="p-1.5 rounded-md hover:bg-primary-foreground/10 hover:text-gold transition-colors"
+            >
+              <Lock className="h-3.5 w-3.5" />
+            </Link>
           </div>
         </div>
       </footer>

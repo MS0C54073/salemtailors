@@ -11,9 +11,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { getStatusInfo, getCategoryLabel, ORDER_STATUSES } from '@/lib/supabase-helpers';
 import { toCSV, downloadCSV } from '@/lib/csv-export';
+import { formatKwacha, todayRange } from '@/lib/admin-helpers';
 import {
   ShoppingBag, Calendar, AlertTriangle, Clock, TrendingUp, Users, DollarSign,
-  Activity, ArrowUpRight, Sparkles, Download, FileDown,
+  Activity, ArrowUpRight, Sparkles, Download, FileDown, Plus, UserPlus, Wallet, Image as ImageIcon,
 } from 'lucide-react';
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -29,6 +30,7 @@ const AdminDashboard = () => {
   const [appointments, setAppointments] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<any[]>([]);
   const [recentMessages, setRecentMessages] = useState<any[]>([]);
+  const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -40,17 +42,19 @@ const AdminDashboard = () => {
         query = query.eq('assigned_to', user.id);
       }
 
-      const [ordersRes, aptsRes, profilesRes, msgsRes] = await Promise.all([
+      const [ordersRes, aptsRes, profilesRes, msgsRes, paymentsRes] = await Promise.all([
         query,
         supabase.from('appointments').select('*').order('scheduled_at', { ascending: false }).limit(50),
         supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(20),
         supabase.from('messages').select('*').order('created_at', { ascending: false }).limit(10),
+        supabase.from('payments').select('*').order('paid_at', { ascending: false }).limit(200),
       ]);
 
       setOrders(ordersRes.data || []);
       setAppointments(aptsRes.data || []);
       setProfiles(profilesRes.data || []);
       setRecentMessages(msgsRes.data || []);
+      setPayments(paymentsRes.data || []);
       setLoading(false);
     };
 
@@ -137,6 +141,7 @@ const AdminDashboard = () => {
   const stats = useMemo(() => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
     const weekStart = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
     const urgentDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
@@ -146,6 +151,15 @@ const AdminDashboard = () => {
     const completedRevenue = orders
       .filter(o => ['completed', 'ready_for_pickup'].includes(o.status))
       .reduce((sum, o) => sum + (Number(o.estimated_cost) || 0), 0);
+
+    const todayIncome = payments
+      .filter(p => { const d = new Date(p.paid_at); return d >= today && d < tomorrow; })
+      .reduce((s, p) => s + Number(p.amount), 0);
+
+    const todayApts = appointments.filter(a => {
+      const d = new Date(a.scheduled_at);
+      return d >= today && d < tomorrow;
+    });
 
     return {
       total: orders.length,
@@ -157,10 +171,12 @@ const AdminDashboard = () => {
       urgent: orders.filter(o => o.event_date && new Date(o.event_date) <= urgentDate && !['completed', 'ready_for_pickup'].includes(o.status)).length,
       clients: profiles.length,
       upcomingApts: appointments.filter(a => new Date(a.scheduled_at) >= now).length,
+      todayApts: todayApts.length,
+      todayIncome,
       totalRevenue,
       completedRevenue,
     };
-  }, [orders, appointments, profiles]);
+  }, [orders, appointments, profiles, payments]);
 
   // === Bookings over time (last 14 days) ===
   const bookingsTimeSeries = useMemo(() => {
@@ -291,6 +307,55 @@ const AdminDashboard = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+        </div>
+
+        {/* Quick Actions */}
+        <Card className="p-3 bg-gradient-to-br from-primary/5 to-gold/5 border-primary/20">
+          <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Quick Actions</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <Button asChild size="sm" className="gap-1 h-auto py-2 flex-col">
+              <Link to="/dashboard/admin/orders?new=1">
+                <Plus className="h-4 w-4" />
+                <span className="text-[11px]">New Order</span>
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline" className="gap-1 h-auto py-2 flex-col">
+              <Link to="/dashboard/admin/appointments">
+                <Calendar className="h-4 w-4" />
+                <span className="text-[11px]">New Appointment</span>
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline" className="gap-1 h-auto py-2 flex-col">
+              <Link to="/dashboard/admin/finance">
+                <Wallet className="h-4 w-4" />
+                <span className="text-[11px]">Record Payment</span>
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline" className="gap-1 h-auto py-2 flex-col">
+              <Link to="/dashboard/admin/customers">
+                <UserPlus className="h-4 w-4" />
+                <span className="text-[11px]">Add Customer</span>
+              </Link>
+            </Button>
+          </div>
+        </Card>
+
+        {/* Today's Snapshot */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: "Today's Income", value: formatKwacha(stats.todayIncome), icon: Wallet, color: 'text-accent', bg: 'bg-accent/10' },
+            { label: "Today's Appointments", value: stats.todayApts, icon: Calendar, color: 'text-primary', bg: 'bg-primary/10' },
+            { label: 'Orders In Progress', value: stats.inProgress, icon: Clock, color: 'text-gold', bg: 'bg-gold/10' },
+            { label: 'Completed Orders', value: stats.completed, icon: ShoppingBag, color: 'text-accent', bg: 'bg-accent/10' },
+          ].map(s => (
+            <Card key={s.label} className="p-4 hover:shadow-warm transition-shadow">
+              <div className={`w-9 h-9 rounded-lg ${s.bg} flex items-center justify-center mb-2`}>
+                <s.icon className={`h-5 w-5 ${s.color}`} />
+              </div>
+              <p className="text-xl md:text-2xl font-bold text-foreground">{s.value}</p>
+              <p className="text-xs text-muted-foreground font-medium">{s.label}</p>
+            </Card>
+          ))}
         </div>
 
         {/* Top KPI Cards */}
