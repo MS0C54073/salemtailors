@@ -11,9 +11,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { getStatusInfo, getCategoryLabel, ORDER_STATUSES } from '@/lib/supabase-helpers';
 import { toCSV, downloadCSV } from '@/lib/csv-export';
+import { formatKwacha, todayRange } from '@/lib/admin-helpers';
 import {
   ShoppingBag, Calendar, AlertTriangle, Clock, TrendingUp, Users, DollarSign,
-  Activity, ArrowUpRight, Sparkles, Download, FileDown,
+  Activity, ArrowUpRight, Sparkles, Download, FileDown, Plus, UserPlus, Wallet, Image as ImageIcon,
 } from 'lucide-react';
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
