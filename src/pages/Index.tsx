@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Scissors, Calendar, MessageCircle, ArrowRight, Star, MapPin, Phone, Navigation, PhoneCall } from 'lucide-react';
+import { Scissors, Calendar, MessageCircle, ArrowRight, Star, MapPin, Phone, Navigation, PhoneCall, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import heroBg from '@/assets/hero-bg.jpg';
 
 const PHONE_NUMBERS = ['+260979287496', '+260978097202'];
@@ -23,7 +24,19 @@ const services = [
 const Index = () => {
   const { user, role } = useAuth();
   const [contactPhone, setContactPhone] = useState<string | null>(null);
+  const [featured, setFeatured] = useState<any[]>([]);
   const dashboardLink = user ? (role === 'client' ? '/dashboard/client' : '/dashboard/admin') : null;
+
+  useEffect(() => {
+    supabase
+      .from('portfolio_items')
+      .select('*')
+      .eq('is_featured', true)
+      .order('display_order', { ascending: true })
+      .limit(8)
+      .then(({ data }) => setFeatured(data || []));
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
