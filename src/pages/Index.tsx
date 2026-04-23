@@ -288,8 +288,16 @@ const Index = () => {
               </div>
             </div>
           </div>
-          <div className="border-t border-primary-foreground/10 mt-6 pt-4 text-center text-xs text-primary-foreground/40">
-            © 2026 Salem Tailors. All rights reserved.
+          <div className="border-t border-primary-foreground/10 mt-6 pt-4 flex items-center justify-between text-xs text-primary-foreground/40">
+            <span>© 2026 Salem Tailors. All rights reserved.</span>
+            <Link
+              to="/admin"
+              title="Admin"
+              aria-label="Admin login"
+              className="p-1.5 rounded-md hover:bg-primary-foreground/10 hover:text-gold transition-colors"
+            >
+              <Lock className="h-3.5 w-3.5" />
+            </Link>
           </div>
         </div>
       </footer>
