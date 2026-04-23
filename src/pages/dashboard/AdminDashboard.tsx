@@ -30,6 +30,7 @@ const AdminDashboard = () => {
   const [appointments, setAppointments] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<any[]>([]);
   const [recentMessages, setRecentMessages] = useState<any[]>([]);
+  const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,17 +42,19 @@ const AdminDashboard = () => {
         query = query.eq('assigned_to', user.id);
       }
 
-      const [ordersRes, aptsRes, profilesRes, msgsRes] = await Promise.all([
+      const [ordersRes, aptsRes, profilesRes, msgsRes, paymentsRes] = await Promise.all([
         query,
         supabase.from('appointments').select('*').order('scheduled_at', { ascending: false }).limit(50),
         supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(20),
         supabase.from('messages').select('*').order('created_at', { ascending: false }).limit(10),
+        supabase.from('payments').select('*').order('paid_at', { ascending: false }).limit(200),
       ]);
 
       setOrders(ordersRes.data || []);
       setAppointments(aptsRes.data || []);
       setProfiles(profilesRes.data || []);
       setRecentMessages(msgsRes.data || []);
+      setPayments(paymentsRes.data || []);
       setLoading(false);
     };
 
