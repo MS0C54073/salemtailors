@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Scissors, Calendar, MessageCircle, ArrowRight, Star, MapPin, Phone } from 'lucide-react';
+import { Scissors, Calendar, MessageCircle, ArrowRight, Star, MapPin, Phone, Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import heroBg from '@/assets/hero-bg.jpg';
@@ -142,6 +142,60 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Location / Map */}
+      <section className="py-16 px-4">
+        <div className="container max-w-4xl">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-8"
+          >
+            <h2 className="font-serif text-3xl font-bold text-foreground mb-2">Visit Our Shop</h2>
+            <p className="text-muted-foreground flex items-center justify-center gap-1">
+              <MapPin className="h-4 w-4 text-primary" />
+              Katungu Market, Lusaka, Zambia
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="rounded-xl overflow-hidden border border-border shadow-warm bg-card"
+          >
+            <div className="aspect-video w-full">
+              <iframe
+                title="Salem Tailors location — Katungu Market, Lusaka"
+                src="https://www.google.com/maps?q=Katungu+Market,+Lusaka,+Zambia&output=embed"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                allowFullScreen
+              />
+            </div>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4">
+              <div>
+                <p className="font-serif font-semibold text-foreground">Salem Tailors</p>
+                <p className="text-sm text-muted-foreground">Katungu Market, Lusaka, Zambia</p>
+              </div>
+              <a
+                href="https://www.google.com/maps/dir/?api=1&destination=Katungu+Market,+Lusaka,+Zambia"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button className="w-full sm:w-auto gap-2">
+                  <Navigation className="h-4 w-4" />
+                  Get Directions
+                </Button>
+              </a>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="py-10 px-4 bg-foreground text-primary-foreground">
         <div className="container">
@@ -158,7 +212,7 @@ const Index = () => {
             <div className="flex flex-col gap-2 text-sm text-primary-foreground/70">
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-gold" />
-                <span>Lusaka, Zambia</span>
+                <span>Katungu Market, Lusaka, Zambia</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-gold" />

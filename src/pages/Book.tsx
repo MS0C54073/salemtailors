@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Scissors, ArrowLeft, Upload, X, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -42,6 +42,43 @@ const Book = () => {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const minDate = tomorrow.toISOString().split('T')[0];
+
+  // Auto-detect a sensible default date & time on first load (still editable).
+  // Defaults to tomorrow at 10:00 local time, or the next weekday if tomorrow is Sunday.
+  useEffect(() => {
+    const suggested = new Date();
+    suggested.setDate(suggested.getDate() + 1);
+    if (suggested.getDay() === 0) suggested.setDate(suggested.getDate() + 1); // skip Sunday
+    const yyyy = suggested.getFullYear();
+    const mm = String(suggested.getMonth() + 1).padStart(2, '0');
+    const dd = String(suggested.getDate()).padStart(2, '0');
+    setForm(f => ({
+      ...f,
+      date: f.date || `${yyyy}-${mm}-${dd}`,
+      time: f.time || '10:00',
+    }));
+  }, []);
+
+  const useNow = () => {
+    const now = new Date();
+    // Suggest the next half-hour slot, at least 1 hour from now, within shop hours
+    now.setMinutes(now.getMinutes() + 60);
+    const minutes = now.getMinutes();
+    now.setMinutes(minutes < 30 ? 30 : 0, 0, 0);
+    if (minutes >= 30) now.setHours(now.getHours() + 1);
+    if (now.getHours() < 8) now.setHours(8, 0, 0, 0);
+    if (now.getHours() >= 17) {
+      now.setDate(now.getDate() + 1);
+      now.setHours(10, 0, 0, 0);
+    }
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mi = String(now.getMinutes()).padStart(2, '0');
+    setForm(f => ({ ...f, date: `${yyyy}-${mm}-${dd}`, time: `${hh}:${mi}` }));
+    toast.success('Date & time auto-filled — feel free to edit.');
+  };
 
   const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -173,15 +210,27 @@ const Book = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="date">Date *</Label>
-                <Input id="date" type="date" min={minDate} value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} required />
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <Label>When would you like to come in? *</Label>
+                <button type="button" onClick={useNow}
+                  className="text-xs font-medium text-primary hover:underline">
+                  Auto-detect
+                </button>
               </div>
-              <div>
-                <Label htmlFor="time">Time *</Label>
-                <Input id="time" type="time" min="08:00" max="17:00" value={form.time} onChange={e => setForm(f => ({ ...f, time: e.target.value }))} required />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="date" className="text-xs text-muted-foreground">Date</Label>
+                  <Input id="date" type="date" min={minDate} value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} required />
+                </div>
+                <div>
+                  <Label htmlFor="time" className="text-xs text-muted-foreground">Time</Label>
+                  <Input id="time" type="time" min="08:00" max="17:00" value={form.time} onChange={e => setForm(f => ({ ...f, time: e.target.value }))} required />
+                </div>
               </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                We've suggested a time — tap any field to change it.
+              </p>
             </div>
             <div>
               <Label htmlFor="notes">Notes (optional)</Label>
