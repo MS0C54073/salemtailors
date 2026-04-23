@@ -309,6 +309,55 @@ const AdminDashboard = () => {
           </div>
         </div>
 
+        {/* Quick Actions */}
+        <Card className="p-3 bg-gradient-to-br from-primary/5 to-gold/5 border-primary/20">
+          <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Quick Actions</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <Button asChild size="sm" className="gap-1 h-auto py-2 flex-col">
+              <Link to="/dashboard/admin/orders?new=1">
+                <Plus className="h-4 w-4" />
+                <span className="text-[11px]">New Order</span>
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline" className="gap-1 h-auto py-2 flex-col">
+              <Link to="/dashboard/admin/appointments">
+                <Calendar className="h-4 w-4" />
+                <span className="text-[11px]">New Appointment</span>
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline" className="gap-1 h-auto py-2 flex-col">
+              <Link to="/dashboard/admin/finance">
+                <Wallet className="h-4 w-4" />
+                <span className="text-[11px]">Record Payment</span>
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline" className="gap-1 h-auto py-2 flex-col">
+              <Link to="/dashboard/admin/customers">
+                <UserPlus className="h-4 w-4" />
+                <span className="text-[11px]">Add Customer</span>
+              </Link>
+            </Button>
+          </div>
+        </Card>
+
+        {/* Today's Snapshot */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: "Today's Income", value: formatKwacha(stats.todayIncome), icon: Wallet, color: 'text-accent', bg: 'bg-accent/10' },
+            { label: "Today's Appointments", value: stats.todayApts, icon: Calendar, color: 'text-primary', bg: 'bg-primary/10' },
+            { label: 'Orders In Progress', value: stats.inProgress, icon: Clock, color: 'text-gold', bg: 'bg-gold/10' },
+            { label: 'Completed Orders', value: stats.completed, icon: ShoppingBag, color: 'text-accent', bg: 'bg-accent/10' },
+          ].map(s => (
+            <Card key={s.label} className="p-4 hover:shadow-warm transition-shadow">
+              <div className={`w-9 h-9 rounded-lg ${s.bg} flex items-center justify-center mb-2`}>
+                <s.icon className={`h-5 w-5 ${s.color}`} />
+              </div>
+              <p className="text-xl md:text-2xl font-bold text-foreground">{s.value}</p>
+              <p className="text-xs text-muted-foreground font-medium">{s.label}</p>
+            </Card>
+          ))}
+        </div>
+
         {/* Top KPI Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
