@@ -19,6 +19,10 @@ import AdminAppointments from "./pages/dashboard/AdminAppointments";
 import Messages from "./pages/dashboard/Messages";
 import StaffManagement from "./pages/dashboard/StaffManagement";
 import Settings from "./pages/dashboard/Settings";
+import AdminLogin from "./pages/AdminLogin";
+import AdminCustomers from "./pages/dashboard/AdminCustomers";
+import AdminFinance from "./pages/dashboard/AdminFinance";
+import AdminPortfolio from "./pages/dashboard/AdminPortfolio";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +37,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/book" element={<Book />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/admin" element={<AdminLogin />} />
 
             {/* Client Routes */}
             <Route path="/dashboard/client" element={<ProtectedRoute allowedRoles={['client']}><ClientDashboard /></ProtectedRoute>} />
@@ -45,6 +50,9 @@ const App = () => (
             <Route path="/dashboard/admin" element={<ProtectedRoute allowedRoles={['super_admin', 'admin', 'sub_admin']}><AdminDashboard /></ProtectedRoute>} />
             <Route path="/dashboard/admin/orders" element={<ProtectedRoute allowedRoles={['super_admin', 'admin', 'sub_admin']}><AdminOrders /></ProtectedRoute>} />
             <Route path="/dashboard/admin/appointments" element={<ProtectedRoute allowedRoles={['super_admin', 'admin']}><AdminAppointments /></ProtectedRoute>} />
+            <Route path="/dashboard/admin/customers" element={<ProtectedRoute allowedRoles={['super_admin', 'admin', 'sub_admin']}><AdminCustomers /></ProtectedRoute>} />
+            <Route path="/dashboard/admin/finance" element={<ProtectedRoute allowedRoles={['super_admin', 'admin']}><AdminFinance /></ProtectedRoute>} />
+            <Route path="/dashboard/admin/portfolio" element={<ProtectedRoute allowedRoles={['super_admin', 'admin', 'sub_admin']}><AdminPortfolio /></ProtectedRoute>} />
             <Route path="/dashboard/admin/messages" element={<ProtectedRoute allowedRoles={['super_admin', 'admin']}><Messages /></ProtectedRoute>} />
             <Route path="/dashboard/admin/staff" element={<ProtectedRoute allowedRoles={['super_admin']}><StaffManagement /></ProtectedRoute>} />
             <Route path="/dashboard/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
