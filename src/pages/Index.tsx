@@ -1,9 +1,15 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Scissors, Calendar, MessageCircle, ArrowRight, Star, MapPin, Phone, Navigation } from 'lucide-react';
+import { Scissors, Calendar, MessageCircle, ArrowRight, Star, MapPin, Phone, Navigation, PhoneCall } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import heroBg from '@/assets/hero-bg.jpg';
+
+const PHONE_NUMBERS = ['+260979287496', '+260978097202'];
 
 const services = [
   { icon: '👗', title: 'Chitenge Wear', desc: 'Beautiful African prints for men & women' },
@@ -16,6 +22,7 @@ const services = [
 
 const Index = () => {
   const { user, role } = useAuth();
+  const [contactPhone, setContactPhone] = useState<string | null>(null);
   const dashboardLink = user ? (role === 'client' ? '/dashboard/client' : '/dashboard/admin') : null;
   return (
     <div className="min-h-screen bg-background">
@@ -209,14 +216,28 @@ const Index = () => {
                 Premium tailoring services in Lusaka, Zambia. Crafting beautiful garments since day one.
               </p>
             </div>
-            <div className="flex flex-col gap-2 text-sm text-primary-foreground/70">
+            <div className="flex flex-col gap-3 text-sm text-primary-foreground/80">
               <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-gold" />
+                <MapPin className="h-4 w-4 text-gold shrink-0" />
                 <span>Katungu Market, Lusaka, Zambia</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-gold" />
-                <span>Contact us for appointments</span>
+              <div className="flex items-start gap-2">
+                <Phone className="h-4 w-4 text-gold shrink-0 mt-1" />
+                <div className="flex flex-col gap-1">
+                  <span className="text-primary-foreground/60 text-xs uppercase tracking-wide">
+                    Call or WhatsApp
+                  </span>
+                  {PHONE_NUMBERS.map(num => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => setContactPhone(num)}
+                      className="text-left font-medium text-primary-foreground hover:text-gold transition-colors underline-offset-4 hover:underline"
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -225,6 +246,43 @@ const Index = () => {
           </div>
         </div>
       </footer>
+
+      {/* Contact method dialog */}
+      <Dialog open={!!contactPhone} onOpenChange={(open) => !open && setContactPhone(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-serif">Contact Salem Tailors</DialogTitle>
+            <DialogDescription>
+              How would you like to reach us on{' '}
+              <span className="font-semibold text-foreground">{contactPhone}</span>?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col sm:flex-col gap-2 sm:space-x-0">
+            <a
+              href={`https://wa.me/${contactPhone?.replace(/\D/g, '')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setContactPhone(null)}
+              className="w-full"
+            >
+              <Button className="w-full bg-[#25D366] hover:bg-[#1ebe57] text-white gap-2 border-0">
+                <MessageCircle className="h-4 w-4" />
+                WhatsApp
+              </Button>
+            </a>
+            <a
+              href={`tel:${contactPhone}`}
+              onClick={() => setContactPhone(null)}
+              className="w-full"
+            >
+              <Button variant="outline" className="w-full gap-2">
+                <PhoneCall className="h-4 w-4" />
+                Call directly
+              </Button>
+            </a>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
