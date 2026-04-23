@@ -58,50 +58,140 @@ export type Database = {
           },
         ]
       }
+      customers: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string | null
+          full_name: string
+          id: string
+          measurements: Json | null
+          notes: string | null
+          phone: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          full_name: string
+          id?: string
+          measurements?: Json | null
+          notes?: string | null
+          phone: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          full_name?: string
+          id?: string
+          measurements?: Json | null
+          notes?: string | null
+          phone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      expenses: {
+        Row: {
+          amount: number
+          category: Database["public"]["Enums"]["expense_category"]
+          created_at: string
+          description: string
+          expense_date: string
+          id: string
+          notes: string | null
+          recorded_by: string | null
+        }
+        Insert: {
+          amount: number
+          category?: Database["public"]["Enums"]["expense_category"]
+          created_at?: string
+          description: string
+          expense_date?: string
+          id?: string
+          notes?: string | null
+          recorded_by?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: Database["public"]["Enums"]["expense_category"]
+          created_at?: string
+          description?: string
+          expense_date?: string
+          id?: string
+          notes?: string | null
+          recorded_by?: string | null
+        }
+        Relationships: []
+      }
       garment_requests: {
         Row: {
           assigned_to: string | null
           category: Database["public"]["Enums"]["garment_category"]
-          client_id: string
+          client_id: string | null
           created_at: string
+          customer_id: string | null
+          customer_name: string | null
+          customer_phone: string | null
           description: string
+          due_date: string | null
           estimated_cost: number | null
           event_date: string | null
           id: string
           measurements: Json | null
           notes: string | null
+          payment_status: Database["public"]["Enums"]["payment_status"] | null
           reference_images: string[] | null
+          service_type: string | null
           status: Database["public"]["Enums"]["order_status"]
+          total_price: number | null
           updated_at: string
         }
         Insert: {
           assigned_to?: string | null
           category: Database["public"]["Enums"]["garment_category"]
-          client_id: string
+          client_id?: string | null
           created_at?: string
+          customer_id?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
           description: string
+          due_date?: string | null
           estimated_cost?: number | null
           event_date?: string | null
           id?: string
           measurements?: Json | null
           notes?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"] | null
           reference_images?: string[] | null
+          service_type?: string | null
           status?: Database["public"]["Enums"]["order_status"]
+          total_price?: number | null
           updated_at?: string
         }
         Update: {
           assigned_to?: string | null
           category?: Database["public"]["Enums"]["garment_category"]
-          client_id?: string
+          client_id?: string | null
           created_at?: string
+          customer_id?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
           description?: string
+          due_date?: string | null
           estimated_cost?: number | null
           event_date?: string | null
           id?: string
           measurements?: Json | null
           notes?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"] | null
           reference_images?: string[] | null
+          service_type?: string | null
           status?: Database["public"]["Enums"]["order_status"]
+          total_price?: number | null
           updated_at?: string
         }
         Relationships: []
@@ -143,6 +233,84 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          customer_id: string | null
+          garment_request_id: string | null
+          id: string
+          notes: string | null
+          paid_at: string
+          payment_method: string | null
+          payment_type: Database["public"]["Enums"]["payment_type"]
+          recorded_by: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          customer_id?: string | null
+          garment_request_id?: string | null
+          id?: string
+          notes?: string | null
+          paid_at?: string
+          payment_method?: string | null
+          payment_type?: Database["public"]["Enums"]["payment_type"]
+          recorded_by?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          customer_id?: string | null
+          garment_request_id?: string | null
+          id?: string
+          notes?: string | null
+          paid_at?: string
+          payment_method?: string | null
+          payment_type?: Database["public"]["Enums"]["payment_type"]
+          recorded_by?: string | null
+        }
+        Relationships: []
+      }
+      portfolio_items: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          display_order: number
+          id: string
+          image_url: string
+          is_featured: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_order?: number
+          id?: string
+          image_url: string
+          is_featured?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_order?: number
+          id?: string
+          image_url?: string
+          is_featured?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -222,6 +390,14 @@ export type Database = {
         | "cancelled"
         | "rescheduled"
       appointment_type: "consultation" | "measurement" | "fitting" | "pickup"
+      expense_category:
+        | "fabric"
+        | "supplies"
+        | "rent"
+        | "utilities"
+        | "transport"
+        | "salaries"
+        | "other"
       garment_category:
         | "chitenge_men"
         | "chitenge_women"
@@ -241,6 +417,8 @@ export type Database = {
         | "adjustments_ongoing"
         | "completed"
         | "ready_for_pickup"
+      payment_status: "not_paid" | "deposit_paid" | "fully_paid"
+      payment_type: "deposit" | "balance" | "full" | "refund"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -377,6 +555,15 @@ export const Constants = {
         "rescheduled",
       ],
       appointment_type: ["consultation", "measurement", "fitting", "pickup"],
+      expense_category: [
+        "fabric",
+        "supplies",
+        "rent",
+        "utilities",
+        "transport",
+        "salaries",
+        "other",
+      ],
       garment_category: [
         "chitenge_men",
         "chitenge_women",
@@ -398,6 +585,8 @@ export const Constants = {
         "completed",
         "ready_for_pickup",
       ],
+      payment_status: ["not_paid", "deposit_paid", "fully_paid"],
+      payment_type: ["deposit", "balance", "full", "refund"],
     },
   },
 } as const
