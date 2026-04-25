@@ -13,9 +13,10 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, TrendingUp, TrendingDown, Wallet, DollarSign, Receipt } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, Wallet, DollarSign, Receipt, Download } from 'lucide-react';
 import { toast } from 'sonner';
-import { formatKwacha, todayRange, weekRange, monthRange } from '@/lib/admin-helpers';
+import { formatKwacha, todayRange, weekRange, monthRange, formatDate, formatDateTime } from '@/lib/admin-helpers';
+import { toCSV, downloadCSV } from '@/lib/csv-export';
 
 const EXPENSE_CATEGORIES = ['fabric', 'supplies', 'rent', 'utilities', 'transport', 'salaries', 'other'];
 const PAYMENT_TYPES = ['deposit', 'balance', 'full', 'refund'];
@@ -98,12 +99,47 @@ const AdminFinance = () => {
 
   const profit = stats.totalIncome - stats.totalExpense;
 
+  const exportPayments = () => {
+    const rows = payments.map(p => ({
+      paid_at: p.paid_at,
+      amount_kwacha: p.amount,
+      payment_type: p.payment_type,
+      payment_method: p.payment_method || 'cash',
+      garment_request_id: p.garment_request_id || '',
+      customer_id: p.customer_id || '',
+      notes: p.notes || '',
+    }));
+    if (rows.length === 0) return toast.error('No payments to export');
+    downloadCSV('salem_payments.csv', toCSV(rows));
+    toast.success(`Exported ${rows.length} payment${rows.length !== 1 ? 's' : ''}`);
+  };
+
+  const exportExpenses = () => {
+    const rows = expenses.map(e => ({
+      expense_date: e.expense_date,
+      amount_kwacha: e.amount,
+      category: e.category,
+      description: e.description,
+      notes: e.notes || '',
+      created_at: e.created_at,
+    }));
+    if (rows.length === 0) return toast.error('No expenses to export');
+    downloadCSV('salem_expenses.csv', toCSV(rows));
+    toast.success(`Exported ${rows.length} expense${rows.length !== 1 ? 's' : ''}`);
+  };
+
   return (
     <DashboardLayout>
       <div className="max-w-3xl mx-auto space-y-4">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <h1 className="font-serif text-2xl font-bold text-foreground">Finance</h1>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <Button size="sm" variant="outline" onClick={exportPayments} className="gap-1">
+              <Download className="h-4 w-4" /> Payments
+            </Button>
+            <Button size="sm" variant="outline" onClick={exportExpenses} className="gap-1">
+              <Download className="h-4 w-4" /> Expenses
+            </Button>
             <Button size="sm" onClick={() => setPaymentOpen(true)} className="gap-1">
               <Plus className="h-4 w-4" /> Payment
             </Button>
@@ -165,7 +201,7 @@ const AdminFinance = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline justify-between gap-2">
                       <p className="font-semibold text-foreground">{formatKwacha(p.amount)}</p>
-                      <p className="text-[11px] text-muted-foreground">{new Date(p.paid_at).toLocaleDateString()}</p>
+                      <p className="text-[11px] text-muted-foreground">{formatDateTime(p.paid_at)}</p>
                     </div>
                     <p className="text-xs text-muted-foreground capitalize">
                       {p.payment_type} · {p.payment_method || 'cash'}
@@ -188,7 +224,7 @@ const AdminFinance = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline justify-between gap-2">
                     <p className="font-semibold text-foreground">{formatKwacha(e.amount)}</p>
-                    <p className="text-[11px] text-muted-foreground">{new Date(e.expense_date).toLocaleDateString()}</p>
+                    <p className="text-[11px] text-muted-foreground">{formatDate(e.expense_date)}</p>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     <span className="capitalize">{e.category}</span> · {e.description}

@@ -9,9 +9,10 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from '@/components/ui/dialog';
-import { User, Phone, Plus, Search, Repeat, Ruler, MessageCircle } from 'lucide-react';
+import { User, Phone, Plus, Search, Repeat, Ruler, MessageCircle, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { whatsappLink, cleanPhone } from '@/lib/admin-helpers';
+import { toCSV, downloadCSV } from '@/lib/csv-export';
 import { useNavigate } from 'react-router-dom';
 
 const MEASUREMENT_FIELDS = [
@@ -82,14 +83,34 @@ const AdminCustomers = () => {
     c.phone.includes(search)
   );
 
+  const exportCsv = () => {
+    const rows = filtered.map(c => ({
+      full_name: c.full_name,
+      phone: c.phone,
+      email: c.email || '',
+      notes: c.notes || '',
+      measurements: c.measurements || {},
+      created_at: c.created_at,
+      updated_at: c.updated_at,
+    }));
+    if (rows.length === 0) return toast.error('No customers to export');
+    downloadCSV('salem_customers.csv', toCSV(rows));
+    toast.success(`Exported ${rows.length} customer${rows.length !== 1 ? 's' : ''}`);
+  };
+
   return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto space-y-4">
         <div className="flex items-center justify-between gap-2">
           <h1 className="font-serif text-2xl font-bold text-foreground">Customers</h1>
-          <Button onClick={openNew} size="sm" className="gap-1">
-            <Plus className="h-4 w-4" /> New
-          </Button>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={exportCsv} className="gap-1">
+              <Download className="h-4 w-4" /> Export
+            </Button>
+            <Button onClick={openNew} size="sm" className="gap-1">
+              <Plus className="h-4 w-4" /> New
+            </Button>
+          </div>
         </div>
 
         <div className="relative">

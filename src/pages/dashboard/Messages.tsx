@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MessageCircle, Send, ArrowLeft } from 'lucide-react';
+import { formatTime } from '@/lib/admin-helpers';
 
 interface Conversation {
   userId: string;
@@ -149,7 +150,7 @@ const Messages = () => {
                 }`}>
                   {msg.content}
                   <p className={`text-[10px] mt-1 ${msg.sender_id === user?.id ? 'text-primary-foreground/60' : 'text-muted-foreground'}`}>
-                    {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {formatTime(msg.created_at)}
                   </p>
                 </div>
               </div>

@@ -20,6 +20,8 @@ import Messages from "./pages/dashboard/Messages";
 import StaffManagement from "./pages/dashboard/StaffManagement";
 import Settings from "./pages/dashboard/Settings";
 import AdminLogin from "./pages/AdminLogin";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import AdminCustomers from "./pages/dashboard/AdminCustomers";
 import AdminFinance from "./pages/dashboard/AdminFinance";
 import AdminPortfolio from "./pages/dashboard/AdminPortfolio";
@@ -39,6 +41,8 @@ const App = () => (
             <Route path="/book" element={<Book />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={<AdminLogin />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
             {/* Client Routes */}
             <Route path="/dashboard/client" element={<ProtectedRoute allowedRoles={['client']}><ClientDashboard /></ProtectedRoute>} />

@@ -1,11 +1,25 @@
 // Lightweight CSV export helpers — no external dependencies.
+import { formatDateTime } from './admin-helpers';
+
+// ISO datetime detector (e.g. "2026-04-25T12:34:56.000Z")
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
+// Date-only detector (keep as-is to avoid timezone shifts)
+const DATE_ONLY_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 function escapeCell(value: any): string {
   if (value === null || value === undefined) return '';
   let str: string;
-  if (value instanceof Date) str = value.toISOString();
-  else if (typeof value === 'object') str = JSON.stringify(value);
-  else str = String(value);
+  if (value instanceof Date) {
+    str = formatDateTime(value);
+  } else if (typeof value === 'string' && ISO_DATE_RE.test(value)) {
+    str = formatDateTime(value);
+  } else if (typeof value === 'string' && DATE_ONLY_RE.test(value)) {
+    str = value;
+  } else if (typeof value === 'object') {
+    str = JSON.stringify(value);
+  } else {
+    str = String(value);
+  }
   if (/[",\n\r]/.test(str)) str = `"${str.replace(/"/g, '""')}"`;
   return str;
 }

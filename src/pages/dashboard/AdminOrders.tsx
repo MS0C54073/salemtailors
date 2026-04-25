@@ -15,7 +15,9 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
 import { GARMENT_CATEGORIES, getCategoryLabel } from '@/lib/supabase-helpers';
-import { ORDER_STATUS_FLOW, formatKwacha, whatsappLink, buildStatusMessage, buildPickupMessage } from '@/lib/admin-helpers';
+import { ORDER_STATUS_FLOW, formatKwacha, whatsappLink, buildStatusMessage, buildPickupMessage, formatDate, formatDateTime } from '@/lib/admin-helpers';
+import { toCSV, downloadCSV } from '@/lib/csv-export';
+import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { Plus, MessageCircle, Phone, Image as ImageIcon, Loader2, X } from 'lucide-react';
 
@@ -122,14 +124,39 @@ const AdminOrders = () => {
 
   const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter);
 
+  const exportCsv = () => {
+    const rows = filtered.map(o => ({
+      reference: o.id.slice(0, 8),
+      created_at: o.created_at,
+      customer_name: o.customer_name || '',
+      customer_phone: o.customer_phone || '',
+      category: getCategoryLabel(o.category),
+      description: o.description,
+      status: getStatusFlow(o.status).label,
+      total_price_kwacha: o.total_price ?? '',
+      payment_status: o.payment_status || '',
+      due_date: o.due_date || '',
+      event_date: o.event_date || '',
+      notes: o.notes || '',
+    }));
+    if (rows.length === 0) return toast.error('No orders to export');
+    downloadCSV('salem_orders.csv', toCSV(rows));
+    toast.success(`Exported ${rows.length} order${rows.length !== 1 ? 's' : ''}`);
+  };
+
   return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto space-y-4">
         <div className="flex items-center justify-between gap-2">
           <h1 className="font-serif text-2xl font-bold text-foreground">Orders</h1>
-          <Button size="sm" onClick={() => setOpen(true)} className="gap-1">
-            <Plus className="h-4 w-4" /> New
-          </Button>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={exportCsv} className="gap-1">
+              <Download className="h-4 w-4" /> Export
+            </Button>
+            <Button size="sm" onClick={() => setOpen(true)} className="gap-1">
+              <Plus className="h-4 w-4" /> New
+            </Button>
+          </div>
         </div>
 
         <Select value={filter} onValueChange={setFilter}>
@@ -158,14 +185,14 @@ const AdminOrders = () => {
                       </p>
                     )}
                     <p className="text-xs text-muted-foreground">
-                      {getCategoryLabel(order.category)} · {new Date(order.created_at).toLocaleDateString()}
+                      {getCategoryLabel(order.category)} · {formatDateTime(order.created_at)}
                     </p>
                   </div>
                   <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${status.color}`}>{status.label}</span>
                 </div>
                 <p className="text-sm text-foreground/80">{order.description}</p>
                 <div className="flex flex-wrap gap-3 text-xs">
-                  {order.due_date && <span className="text-primary">📅 Due: {new Date(order.due_date).toLocaleDateString()}</span>}
+                  {order.due_date && <span className="text-primary">📅 Due: {formatDate(order.due_date)}</span>}
                   {order.total_price && <span className="text-accent font-semibold">{formatKwacha(order.total_price)}</span>}
                   {order.payment_status && <span className="text-muted-foreground capitalize">· {order.payment_status.replace('_', ' ')}</span>}
                 </div>

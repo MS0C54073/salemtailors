@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { formatDateTime } from '@/lib/admin-helpers';
 
 const APPOINTMENT_TYPES = [
   { value: 'consultation', label: 'Consultation' },
@@ -227,7 +228,7 @@ const ClientAppointments = () => {
                       {apt.status}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground">{new Date(apt.scheduled_at).toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">{formatDateTime(apt.scheduled_at)}</p>
                   {apt.notes && <p className="text-xs text-muted-foreground mt-1">{apt.notes}</p>}
                 </div>
               </Card>
