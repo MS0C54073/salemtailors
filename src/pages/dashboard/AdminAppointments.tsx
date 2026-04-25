@@ -13,10 +13,11 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
-import { Calendar, Clock, Plus, MessageCircle, AlertCircle, CalendarPlus } from 'lucide-react';
+import { Calendar, Clock, Plus, MessageCircle, AlertCircle, CalendarPlus, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
-import { whatsappLink, buildAppointmentMessage } from '@/lib/admin-helpers';
+import { whatsappLink, buildAppointmentMessage, formatDateTime } from '@/lib/admin-helpers';
+import { toCSV, downloadCSV } from '@/lib/csv-export';
 
 const APPOINTMENT_TYPES = ['consultation', 'measurement', 'fitting', 'pickup'];
 const SHOP_HOURS = { start: 8, end: 17 }; // 08:00 - 17:00
