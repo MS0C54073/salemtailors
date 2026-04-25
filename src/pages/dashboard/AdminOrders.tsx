@@ -124,14 +124,39 @@ const AdminOrders = () => {
 
   const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter);
 
+  const exportCsv = () => {
+    const rows = filtered.map(o => ({
+      reference: o.id.slice(0, 8),
+      created_at: o.created_at,
+      customer_name: o.customer_name || '',
+      customer_phone: o.customer_phone || '',
+      category: getCategoryLabel(o.category),
+      description: o.description,
+      status: getStatusFlow(o.status).label,
+      total_price_kwacha: o.total_price ?? '',
+      payment_status: o.payment_status || '',
+      due_date: o.due_date || '',
+      event_date: o.event_date || '',
+      notes: o.notes || '',
+    }));
+    if (rows.length === 0) return toast.error('No orders to export');
+    downloadCSV('salem_orders.csv', toCSV(rows));
+    toast.success(`Exported ${rows.length} order${rows.length !== 1 ? 's' : ''}`);
+  };
+
   return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto space-y-4">
         <div className="flex items-center justify-between gap-2">
           <h1 className="font-serif text-2xl font-bold text-foreground">Orders</h1>
-          <Button size="sm" onClick={() => setOpen(true)} className="gap-1">
-            <Plus className="h-4 w-4" /> New
-          </Button>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={exportCsv} className="gap-1">
+              <Download className="h-4 w-4" /> Export
+            </Button>
+            <Button size="sm" onClick={() => setOpen(true)} className="gap-1">
+              <Plus className="h-4 w-4" /> New
+            </Button>
+          </div>
         </div>
 
         <Select value={filter} onValueChange={setFilter}>
