@@ -79,7 +79,7 @@ const AdminAppointments = () => {
     if (error) return toast.error(error.message);
     toast.success('Appointment created');
     // Send WhatsApp confirmation
-    const msg = buildAppointmentMessage(form.customer_name, form.appointment_type, dt.toLocaleString());
+    const msg = buildAppointmentMessage(form.customer_name, form.appointment_type, formatDateTime(dt));
     window.open(whatsappLink(form.customer_phone, msg), '_blank');
     setOpen(false);
     setForm({ ...form, customer_name: '', customer_phone: '', notes: '' });
