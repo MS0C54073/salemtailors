@@ -1,7 +1,60 @@
-// Helpers for admin modules: WhatsApp messaging, currency, status formatting.
+// Helpers for admin modules: WhatsApp messaging, currency, status formatting, dates.
 
 export const SHOP_NAME = 'Salem Tailors';
 export const SHOP_PHONE = '+260979287496';
+
+// Salem operates in Lusaka, Zambia (CAT, UTC+02:00 — same offset as Cairo).
+// All user-facing dates/times are formatted to this zone for consistency.
+export const SHOP_TIMEZONE = 'Africa/Lusaka';
+export const SHOP_LOCALE = 'en-GB';
+
+const _withZone = (opts: Intl.DateTimeFormatOptions): Intl.DateTimeFormatOptions => ({
+  ...opts,
+  timeZone: SHOP_TIMEZONE,
+});
+
+/** Date + time in Lusaka time, e.g. "25 Apr 2026, 14:30" */
+export function formatDateTime(input: Date | string | null | undefined): string {
+  if (!input) return '';
+  const d = input instanceof Date ? input : new Date(input);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleString(SHOP_LOCALE, _withZone({
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }));
+}
+
+/** Date only in Lusaka time, e.g. "25 Apr 2026" */
+export function formatDate(input: Date | string | null | undefined): string {
+  if (!input) return '';
+  const d = input instanceof Date ? input : new Date(input);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString(SHOP_LOCALE, _withZone({
+    day: '2-digit', month: 'short', year: 'numeric',
+  }));
+}
+
+/** Time only in Lusaka time, e.g. "14:30" */
+export function formatTime(input: Date | string | null | undefined): string {
+  if (!input) return '';
+  const d = input instanceof Date ? input : new Date(input);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleTimeString(SHOP_LOCALE, _withZone({
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }));
+}
+
+/** Long date label, e.g. "Saturday, 25 April 2026" */
+export function formatDateLong(input: Date | string | null | undefined): string {
+  if (!input) return '';
+  const d = input instanceof Date ? input : new Date(input);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString(SHOP_LOCALE, _withZone({
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  }));
+}
+
+
 
 export const ORDER_STATUS_FLOW = [
   { value: 'request_submitted', label: 'Received', color: 'bg-muted text-muted-foreground' },
