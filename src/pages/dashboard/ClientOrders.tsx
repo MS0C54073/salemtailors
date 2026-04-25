@@ -5,6 +5,7 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { Card } from '@/components/ui/card';
 import { getStatusInfo, getCategoryLabel } from '@/lib/supabase-helpers';
 import { ShoppingBag } from 'lucide-react';
+import { formatDate } from '@/lib/admin-helpers';
 
 const ClientOrders = () => {
   const { user } = useAuth();
