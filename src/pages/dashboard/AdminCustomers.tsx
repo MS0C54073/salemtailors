@@ -9,9 +9,10 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from '@/components/ui/dialog';
-import { User, Phone, Plus, Search, Repeat, Ruler, MessageCircle } from 'lucide-react';
+import { User, Phone, Plus, Search, Repeat, Ruler, MessageCircle, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { whatsappLink, cleanPhone } from '@/lib/admin-helpers';
+import { toCSV, downloadCSV } from '@/lib/csv-export';
 import { useNavigate } from 'react-router-dom';
 
 const MEASUREMENT_FIELDS = [
