@@ -20,8 +20,13 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   }
 
   if (!user) return <Navigate to="/auth" replace />;
-  if (allowedRoles && role && !allowedRoles.includes(role)) {
-    return <Navigate to={role === 'client' ? '/dashboard/client' : '/dashboard/admin'} replace />;
+  // Deny access when role is unknown (null) for any role-gated route — prevents bypass
+  // when the role lookup fails or is still in flight.
+  if (allowedRoles) {
+    if (!role) return <Navigate to="/auth" replace />;
+    if (!allowedRoles.includes(role)) {
+      return <Navigate to={role === 'client' ? '/dashboard/client' : '/dashboard/admin'} replace />;
+    }
   }
 
   return <>{children}</>;
