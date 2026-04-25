@@ -136,6 +136,14 @@ const AdminLogin = () => {
               {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {mode === 'login' ? 'Sign In' : 'Create Admin Account'}
             </Button>
+
+            {mode === 'login' && (
+              <div className="text-center">
+                <Link to="/forgot-password" className="text-xs text-primary hover:underline font-medium">
+                  Forgot your password?
+                </Link>
+              </div>
+            )}
           </form>
 
           <p className="text-center text-xs text-muted-foreground mt-4">
