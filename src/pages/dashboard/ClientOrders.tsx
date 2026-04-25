@@ -36,13 +36,13 @@ const ClientOrders = () => {
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <p className="font-semibold text-foreground">{getCategoryLabel(order.category)}</p>
-                      <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</p>
+                      <p className="text-xs text-muted-foreground">{formatDate(order.created_at)}</p>
                     </div>
                     <span className={`text-xs px-2 py-1 rounded-full ${status.color}`}>{status.label}</span>
                   </div>
                   <p className="text-sm text-muted-foreground line-clamp-2">{order.description}</p>
                   {order.event_date && (
-                    <p className="text-xs text-primary mt-2">📅 Event: {new Date(order.event_date).toLocaleDateString()}</p>
+                    <p className="text-xs text-primary mt-2">📅 Event: {formatDate(order.event_date)}</p>
                   )}
                   {order.reference_images?.length > 0 && (
                     <div className="flex gap-1 mt-2">

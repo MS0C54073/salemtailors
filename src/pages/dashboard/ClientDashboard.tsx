@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ShoppingBag, Plus, Calendar, Clock } from 'lucide-react';
 import { getStatusInfo, getCategoryLabel } from '@/lib/supabase-helpers';
+import { formatDate, formatDateTime } from '@/lib/admin-helpers';
 
 const ClientDashboard = () => {
   const { user } = useAuth();
