@@ -160,14 +160,14 @@ const AdminOrders = () => {
                       </p>
                     )}
                     <p className="text-xs text-muted-foreground">
-                      {getCategoryLabel(order.category)} · {new Date(order.created_at).toLocaleDateString()}
+                      {getCategoryLabel(order.category)} · {formatDateTime(order.created_at)}
                     </p>
                   </div>
                   <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${status.color}`}>{status.label}</span>
                 </div>
                 <p className="text-sm text-foreground/80">{order.description}</p>
                 <div className="flex flex-wrap gap-3 text-xs">
-                  {order.due_date && <span className="text-primary">📅 Due: {new Date(order.due_date).toLocaleDateString()}</span>}
+                  {order.due_date && <span className="text-primary">📅 Due: {formatDate(order.due_date)}</span>}
                   {order.total_price && <span className="text-accent font-semibold">{formatKwacha(order.total_price)}</span>}
                   {order.payment_status && <span className="text-muted-foreground capitalize">· {order.payment_status.replace('_', ' ')}</span>}
                 </div>
