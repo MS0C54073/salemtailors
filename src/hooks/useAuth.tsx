@@ -51,9 +51,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
+        // Keep loading true until role is resolved to prevent route bypass via null role
+        setLoading(true);
         setTimeout(async () => {
           const r = await getUserRole(session.user.id);
           setRole(r);
+          setLoading(false);
         }, 0);
       } else {
         setRole(null);
