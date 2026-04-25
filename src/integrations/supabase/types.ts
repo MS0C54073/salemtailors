@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointment_slots: {
+        Row: {
+          appointment_id: string | null
+          booked_by: string | null
+          created_at: string
+          created_by: string | null
+          duration_minutes: number
+          id: string
+          is_available: boolean
+          notes: string | null
+          slot_at: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          booked_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          duration_minutes?: number
+          id?: string
+          is_available?: boolean
+          notes?: string | null
+          slot_at: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          booked_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          duration_minutes?: number
+          id?: string
+          is_available?: boolean
+          notes?: string | null
+          slot_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           appointment_type: Database["public"]["Enums"]["appointment_type"]
