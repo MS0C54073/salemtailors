@@ -111,7 +111,21 @@ const AdminAppointments = () => {
       <div className="max-w-2xl mx-auto space-y-4">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <h1 className="font-serif text-2xl font-bold text-foreground">Appointments</h1>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <Button size="sm" variant="outline" onClick={() => {
+              const rows = appointments.map(a => ({
+                scheduled_at: a.scheduled_at,
+                type: a.appointment_type,
+                status: a.status,
+                notes: a.notes || '',
+                created_at: a.created_at,
+              }));
+              if (rows.length === 0) return toast.error('No appointments to export');
+              downloadCSV('salem_appointments.csv', toCSV(rows));
+              toast.success(`Exported ${rows.length} appointment${rows.length !== 1 ? 's' : ''}`);
+            }} className="gap-1">
+              <Download className="h-4 w-4" /> Export
+            </Button>
             <Link to="/dashboard/admin/slots">
               <Button size="sm" variant="outline" className="gap-1 border-primary text-primary">
                 <CalendarPlus className="h-4 w-4" /> Slots
@@ -157,7 +171,7 @@ const AdminAppointments = () => {
                   <div className="flex items-baseline justify-between gap-2">
                     <p className="text-sm font-semibold text-foreground capitalize">{apt.appointment_type}</p>
                     <p className="text-xs text-primary font-medium">
-                      {new Date(apt.scheduled_at).toLocaleString('en-ZM', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      {formatDateTime(apt.scheduled_at)}
                     </p>
                   </div>
                   {apt.notes && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{apt.notes}</p>}
