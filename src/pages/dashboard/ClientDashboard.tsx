@@ -81,7 +81,7 @@ const ClientDashboard = () => {
                   <Card key={order.id} className="p-3 flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-foreground">{getCategoryLabel(order.category)}</p>
-                      <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</p>
+                      <p className="text-xs text-muted-foreground">{formatDate(order.created_at)}</p>
                     </div>
                     <span className={`text-xs px-2 py-1 rounded-full ${status.color}`}>
                       {status.label}
@@ -106,7 +106,7 @@ const ClientDashboard = () => {
                   <div>
                     <p className="text-sm font-medium text-foreground capitalize">{apt.appointment_type}</p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(apt.scheduled_at).toLocaleString()}
+                      {formatDateTime(apt.scheduled_at)}
                     </p>
                   </div>
                 </Card>
