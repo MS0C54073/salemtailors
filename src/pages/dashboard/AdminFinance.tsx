@@ -13,9 +13,10 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, TrendingUp, TrendingDown, Wallet, DollarSign, Receipt } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, Wallet, DollarSign, Receipt, Download } from 'lucide-react';
 import { toast } from 'sonner';
-import { formatKwacha, todayRange, weekRange, monthRange } from '@/lib/admin-helpers';
+import { formatKwacha, todayRange, weekRange, monthRange, formatDate, formatDateTime } from '@/lib/admin-helpers';
+import { toCSV, downloadCSV } from '@/lib/csv-export';
 
 const EXPENSE_CATEGORIES = ['fabric', 'supplies', 'rent', 'utilities', 'transport', 'salaries', 'other'];
 const PAYMENT_TYPES = ['deposit', 'balance', 'full', 'refund'];
