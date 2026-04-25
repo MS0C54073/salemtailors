@@ -23,6 +23,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminCustomers from "./pages/dashboard/AdminCustomers";
 import AdminFinance from "./pages/dashboard/AdminFinance";
 import AdminPortfolio from "./pages/dashboard/AdminPortfolio";
+import AdminSlots from "./pages/dashboard/AdminSlots";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const App = () => (
             <Route path="/dashboard/admin" element={<ProtectedRoute allowedRoles={['super_admin', 'admin', 'sub_admin']}><AdminDashboard /></ProtectedRoute>} />
             <Route path="/dashboard/admin/orders" element={<ProtectedRoute allowedRoles={['super_admin', 'admin', 'sub_admin']}><AdminOrders /></ProtectedRoute>} />
             <Route path="/dashboard/admin/appointments" element={<ProtectedRoute allowedRoles={['super_admin', 'admin']}><AdminAppointments /></ProtectedRoute>} />
+            <Route path="/dashboard/admin/slots" element={<ProtectedRoute allowedRoles={['super_admin', 'admin']}><AdminSlots /></ProtectedRoute>} />
             <Route path="/dashboard/admin/customers" element={<ProtectedRoute allowedRoles={['super_admin', 'admin', 'sub_admin']}><AdminCustomers /></ProtectedRoute>} />
             <Route path="/dashboard/admin/finance" element={<ProtectedRoute allowedRoles={['super_admin', 'admin']}><AdminFinance /></ProtectedRoute>} />
             <Route path="/dashboard/admin/portfolio" element={<ProtectedRoute allowedRoles={['super_admin', 'admin', 'sub_admin']}><AdminPortfolio /></ProtectedRoute>} />

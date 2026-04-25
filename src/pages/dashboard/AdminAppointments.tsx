@@ -13,8 +13,9 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
-import { Calendar, Clock, Plus, MessageCircle, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, Plus, MessageCircle, AlertCircle, CalendarPlus } from 'lucide-react';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 import { whatsappLink, buildAppointmentMessage } from '@/lib/admin-helpers';
 
 const APPOINTMENT_TYPES = ['consultation', 'measurement', 'fitting', 'pickup'];
@@ -109,9 +110,16 @@ const AdminAppointments = () => {
       <div className="max-w-2xl mx-auto space-y-4">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <h1 className="font-serif text-2xl font-bold text-foreground">Appointments</h1>
-          <Button size="sm" onClick={() => setOpen(true)} className="gap-1">
-            <Plus className="h-4 w-4" /> New
-          </Button>
+          <div className="flex gap-2">
+            <Link to="/dashboard/admin/slots">
+              <Button size="sm" variant="outline" className="gap-1 border-primary text-primary">
+                <CalendarPlus className="h-4 w-4" /> Slots
+              </Button>
+            </Link>
+            <Button size="sm" onClick={() => setOpen(true)} className="gap-1">
+              <Plus className="h-4 w-4" /> New
+            </Button>
+          </div>
         </div>
 
         <div className="flex gap-2 items-center">

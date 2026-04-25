@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -8,7 +8,6 @@ import { Calendar, Clock, Plus } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
@@ -19,12 +18,19 @@ const APPOINTMENT_TYPES = [
   { value: 'pickup', label: 'Pickup' },
 ];
 
+interface Slot {
+  id: string;
+  slot_at: string;
+  duration_minutes: number;
+}
+
 const ClientAppointments = () => {
   const { user } = useAuth();
   const [appointments, setAppointments] = useState<any[]>([]);
+  const [slots, setSlots] = useState<Slot[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ type: '', date: '', time: '', notes: '' });
+  const [form, setForm] = useState({ type: '', slotId: '', notes: '' });
 
   const fetchAppointments = () => {
     if (!user) return;
@@ -33,57 +39,101 @@ const ClientAppointments = () => {
       .then(({ data }) => setAppointments(data || []));
   };
 
-  useEffect(() => { fetchAppointments(); }, [user]);
+  const fetchSlots = () => {
+    supabase.from('appointment_slots').select('id, slot_at, duration_minutes')
+      .eq('is_available', true)
+      .is('booked_by', null)
+      .gte('slot_at', new Date().toISOString())
+      .order('slot_at', { ascending: true })
+      .then(({ data }) => setSlots(data || []));
+  };
+
+  useEffect(() => {
+    fetchAppointments();
+    fetchSlots();
+  }, [user]);
+
+  // Group slots by day for the picker
+  const groupedSlots = useMemo(() => {
+    return slots.reduce<Record<string, Slot[]>>((acc, s) => {
+      const day = new Date(s.slot_at).toLocaleDateString('en-GB', {
+        weekday: 'short', month: 'short', day: 'numeric',
+      });
+      (acc[day] = acc[day] || []).push(s);
+      return acc;
+    }, {});
+  }, [slots]);
 
   const handleBook = async () => {
-    if (!user || !form.type || !form.date || !form.time) return;
+    if (!user || !form.type || !form.slotId) return;
+    const slot = slots.find(s => s.id === form.slotId);
+    if (!slot) return toast.error('Selected slot is no longer available');
     setLoading(true);
-    const scheduledAt = new Date(`${form.date}T${form.time}`).toISOString();
 
-    // Check for double booking
-    const { data: existing } = await supabase.from('appointments').select('id')
-      .eq('scheduled_at', scheduledAt).neq('status', 'cancelled');
-    if (existing && existing.length > 0) {
-      toast.error('This time slot is already booked. Please choose another.');
+    // Atomically claim the slot (RLS allows only if still available + null booked_by)
+    const { data: claimed, error: claimErr } = await supabase
+      .from('appointment_slots')
+      .update({ booked_by: user.id, is_available: false })
+      .eq('id', slot.id)
+      .eq('is_available', true)
+      .is('booked_by', null)
+      .select()
+      .maybeSingle();
+
+    if (claimErr || !claimed) {
+      toast.error('That slot was just taken. Please pick another.');
+      fetchSlots();
       setLoading(false);
       return;
     }
 
-    const { error } = await supabase.from('appointments').insert({
+    // Create the appointment
+    const { data: apt, error } = await supabase.from('appointments').insert({
       client_id: user.id,
       appointment_type: form.type as any,
-      scheduled_at: scheduledAt,
+      scheduled_at: slot.slot_at,
       notes: form.notes || null,
-    });
+    }).select().single();
 
     if (error) {
+      // Roll back the slot claim
+      await supabase.from('appointment_slots').update({
+        booked_by: null, is_available: true,
+      }).eq('id', slot.id);
       toast.error('Failed to book appointment');
-    } else {
-      toast.success('Appointment booked! Opening WhatsApp...');
-
-      // Build WhatsApp message with booking details
-      const typeLabel = APPOINTMENT_TYPES.find(t => t.value === form.type)?.label || form.type;
-      const formattedDate = new Date(scheduledAt).toLocaleString('en-GB', {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-        hour: '2-digit', minute: '2-digit'
-      });
-      const clientName = user.user_metadata?.full_name || user.email || 'Client';
-      const messageLines = [
-        `*New Appointment Booking - Salem Tailors*`,
-        ``,
-        `*Client:* ${clientName}`,
-        `*Type:* ${typeLabel}`,
-        `*Date & Time:* ${formattedDate}`,
-      ];
-      if (form.notes) messageLines.push(`*Notes:* ${form.notes}`);
-      const waMessage = encodeURIComponent(messageLines.join('\n'));
-      const waUrl = `https://wa.me/260979287496?text=${waMessage}`;
-      window.open(waUrl, '_blank', 'noopener,noreferrer');
-
-      setOpen(false);
-      setForm({ type: '', date: '', time: '', notes: '' });
-      fetchAppointments();
+      setLoading(false);
+      return;
     }
+
+    // Link appointment back to slot
+    await supabase.from('appointment_slots')
+      .update({ appointment_id: apt.id })
+      .eq('id', slot.id);
+
+    toast.success('Appointment booked! Opening WhatsApp...');
+
+    // Build WhatsApp message
+    const typeLabel = APPOINTMENT_TYPES.find(t => t.value === form.type)?.label || form.type;
+    const formattedDate = new Date(slot.slot_at).toLocaleString('en-GB', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+    const clientName = user.user_metadata?.full_name || user.email || 'Client';
+    const messageLines = [
+      `*New Appointment Booking - Salem Tailors*`,
+      ``,
+      `*Client:* ${clientName}`,
+      `*Type:* ${typeLabel}`,
+      `*Date & Time:* ${formattedDate}`,
+    ];
+    if (form.notes) messageLines.push(`*Notes:* ${form.notes}`);
+    const waMessage = encodeURIComponent(messageLines.join('\n'));
+    window.open(`https://wa.me/260979287496?text=${waMessage}`, '_blank', 'noopener,noreferrer');
+
+    setOpen(false);
+    setForm({ type: '', slotId: '', notes: '' });
+    fetchAppointments();
+    fetchSlots();
     setLoading(false);
   };
 
@@ -95,17 +145,12 @@ const ClientAppointments = () => {
     rescheduled: 'bg-primary/20 text-primary',
   };
 
-  // Get minimum date (tomorrow)
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const minDate = tomorrow.toISOString().split('T')[0];
-
   return (
     <DashboardLayout>
       <div className="max-w-lg mx-auto">
         <div className="flex justify-between items-center mb-4">
           <h1 className="font-serif text-2xl font-bold text-foreground">Appointments</h1>
-          <Dialog open={open} onOpenChange={setOpen}>
+          <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) fetchSlots(); }}>
             <DialogTrigger asChild>
               <Button size="sm" variant="outline" className="border-primary text-primary font-semibold"><Plus className="h-4 w-4 mr-1" /> Book</Button>
             </DialogTrigger>
@@ -126,18 +171,35 @@ const ClientAppointments = () => {
                   </Select>
                 </div>
                 <div>
-                  <Label>Date *</Label>
-                  <Input type="date" min={minDate} value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
-                </div>
-                <div>
-                  <Label>Time *</Label>
-                  <Input type="time" min="08:00" max="17:00" value={form.time} onChange={e => setForm(f => ({ ...f, time: e.target.value }))} />
+                  <Label>Available Slot *</Label>
+                  {slots.length === 0 ? (
+                    <p className="text-xs text-muted-foreground mt-2 p-3 bg-muted rounded">
+                      No open slots right now. Please check back soon — Salem Tailors will publish more times.
+                    </p>
+                  ) : (
+                    <Select value={form.slotId} onValueChange={v => setForm(f => ({ ...f, slotId: v }))}>
+                      <SelectTrigger><SelectValue placeholder="Pick a time" /></SelectTrigger>
+                      <SelectContent className="max-h-72">
+                        {Object.entries(groupedSlots).map(([day, daySlots]) => (
+                          <div key={day}>
+                            <div className="px-2 py-1 text-[10px] font-semibold uppercase text-muted-foreground tracking-wide">{day}</div>
+                            {daySlots.map(s => (
+                              <SelectItem key={s.id} value={s.id}>
+                                {new Date(s.slot_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                                {' '}· {s.duration_minutes}m
+                              </SelectItem>
+                            ))}
+                          </div>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
                 <div>
                   <Label>Notes</Label>
                   <Textarea placeholder="Any special notes..." value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} />
                 </div>
-                <Button className="w-full" onClick={handleBook} disabled={loading || !form.type || !form.date || !form.time}>
+                <Button className="w-full" onClick={handleBook} disabled={loading || !form.type || !form.slotId}>
                   {loading ? 'Booking...' : 'Book Appointment'}
                 </Button>
               </div>
