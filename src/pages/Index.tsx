@@ -46,7 +46,10 @@ const Index = () => {
             <Scissors className="h-5 w-5 text-primary" />
             <span className="font-serif text-lg font-bold text-foreground">Salem Tailors</span>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <Link to="/catalogue" className="hidden sm:inline-flex">
+              <Button variant="ghost" size="sm">Shop</Button>
+            </Link>
             {user ? (
               <Link to={dashboardLink || '/dashboard/client'}>
                 <Button variant="ghost" size="sm">Dashboard</Button>
