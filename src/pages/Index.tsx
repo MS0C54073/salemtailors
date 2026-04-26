@@ -46,7 +46,10 @@ const Index = () => {
             <Scissors className="h-5 w-5 text-primary" />
             <span className="font-serif text-lg font-bold text-foreground">Salem Tailors</span>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <Link to="/catalogue" className="hidden sm:inline-flex">
+              <Button variant="ghost" size="sm">Shop</Button>
+            </Link>
             {user ? (
               <Link to={dashboardLink || '/dashboard/client'}>
                 <Button variant="ghost" size="sm">Dashboard</Button>
@@ -129,6 +132,13 @@ const Index = () => {
                 <p className="text-xs text-muted-foreground">{s.desc}</p>
               </motion.div>
             ))}
+          </div>
+          <div className="mt-8 text-center">
+            <Link to="/catalogue">
+              <Button size="lg" variant="outline" className="gap-2">
+                Browse the Shop <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

@@ -1,10 +1,12 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { Scissors, LayoutDashboard, ShoppingBag, Calendar, MessageCircle, Users, LogOut, ArrowLeft, Settings as SettingsIcon, Wallet, Image as ImageIcon, UserCircle } from 'lucide-react';
+import { Scissors, LayoutDashboard, ShoppingBag, Calendar, MessageCircle, Users, LogOut, ArrowLeft, Settings as SettingsIcon, Wallet, Image as ImageIcon, UserCircle, Package, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
+  const [moreOpen, setMoreOpen] = useState(false);
   const { role, signOut, user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -21,6 +23,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const staffLinks = [
     { to: '/dashboard/admin', icon: LayoutDashboard, label: 'Home' },
     { to: '/dashboard/admin/orders', icon: ShoppingBag, label: 'Orders' },
+    { to: '/dashboard/admin/catalogue', icon: Package, label: 'Catalogue' },
     { to: '/dashboard/admin/appointments', icon: Calendar, label: 'Calendar' },
     { to: '/dashboard/admin/customers', icon: UserCircle, label: 'Customers' },
     { to: '/dashboard/admin/finance', icon: Wallet, label: 'Finance' },
@@ -68,7 +71,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
 
       {/* Bottom nav */}
       <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border px-2 py-1 flex justify-around z-40">
-        {links.slice(0, 5).map(link => {
+        {links.slice(0, 4).map(link => {
           const active = location.pathname === link.to;
           return (
             <Link
@@ -83,6 +86,37 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
             </Link>
           );
         })}
+        {links.length > 4 && (
+          <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
+            <SheetTrigger asChild>
+              <button className="flex flex-col items-center py-1.5 px-2 rounded-md text-muted-foreground hover:text-foreground transition-colors">
+                <MoreHorizontal className="h-5 w-5" />
+                <span className="text-[10px] mt-0.5 font-medium">More</span>
+              </button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="rounded-t-2xl">
+              <SheetHeader><SheetTitle className="font-serif text-left">All sections</SheetTitle></SheetHeader>
+              <div className="grid grid-cols-3 gap-2 mt-4 pb-4">
+                {links.slice(4).map(link => {
+                  const active = location.pathname === link.to;
+                  return (
+                    <Link
+                      key={link.to}
+                      to={link.to}
+                      onClick={() => setMoreOpen(false)}
+                      className={`flex flex-col items-center justify-center gap-1 p-4 rounded-lg border ${
+                        active ? 'border-primary bg-primary/5 text-primary' : 'border-border hover:border-primary/50'
+                      }`}
+                    >
+                      <link.icon className="h-5 w-5" />
+                      <span className="text-xs font-medium">{link.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </SheetContent>
+          </Sheet>
+        )}
       </nav>
     </div>
   );

@@ -97,6 +97,177 @@ export type Database = {
           },
         ]
       }
+      catalogue_categories: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      catalogue_item_images: {
+        Row: {
+          alt_text: string | null
+          created_at: string
+          display_order: number
+          id: string
+          image_url: string
+          item_id: string
+        }
+        Insert: {
+          alt_text?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url: string
+          item_id: string
+        }
+        Update: {
+          alt_text?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url?: string
+          item_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalogue_item_images_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "catalogue_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalogue_item_variants: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          item_id: string
+          name: string
+          price_override: number | null
+          sku: string | null
+          stock_status: Database["public"]["Enums"]["stock_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          item_id: string
+          name: string
+          price_override?: number | null
+          sku?: string | null
+          stock_status?: Database["public"]["Enums"]["stock_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          item_id?: string
+          name?: string
+          price_override?: number | null
+          sku?: string | null
+          stock_status?: Database["public"]["Enums"]["stock_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalogue_item_variants_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "catalogue_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalogue_items: {
+        Row: {
+          base_price: number | null
+          category_id: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          description: string | null
+          display_order: number
+          id: string
+          is_featured: boolean
+          name: string
+          primary_image_url: string | null
+          slug: string
+          status: Database["public"]["Enums"]["catalogue_status"]
+          stock_status: Database["public"]["Enums"]["stock_status"]
+          updated_at: string
+        }
+        Insert: {
+          base_price?: number | null
+          category_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_featured?: boolean
+          name: string
+          primary_image_url?: string | null
+          slug: string
+          status?: Database["public"]["Enums"]["catalogue_status"]
+          stock_status?: Database["public"]["Enums"]["stock_status"]
+          updated_at?: string
+        }
+        Update: {
+          base_price?: number | null
+          category_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_featured?: boolean
+          name?: string
+          primary_image_url?: string | null
+          slug?: string
+          status?: Database["public"]["Enums"]["catalogue_status"]
+          stock_status?: Database["public"]["Enums"]["stock_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalogue_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "catalogue_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           created_at: string
@@ -429,6 +600,7 @@ export type Database = {
         | "cancelled"
         | "rescheduled"
       appointment_type: "consultation" | "measurement" | "fitting" | "pickup"
+      catalogue_status: "active" | "draft" | "sold_out"
       expense_category:
         | "fabric"
         | "supplies"
@@ -458,6 +630,7 @@ export type Database = {
         | "ready_for_pickup"
       payment_status: "not_paid" | "deposit_paid" | "fully_paid"
       payment_type: "deposit" | "balance" | "full" | "refund"
+      stock_status: "in_stock" | "low_stock" | "out_of_stock"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -594,6 +767,7 @@ export const Constants = {
         "rescheduled",
       ],
       appointment_type: ["consultation", "measurement", "fitting", "pickup"],
+      catalogue_status: ["active", "draft", "sold_out"],
       expense_category: [
         "fabric",
         "supplies",
@@ -626,6 +800,7 @@ export const Constants = {
       ],
       payment_status: ["not_paid", "deposit_paid", "fully_paid"],
       payment_type: ["deposit", "balance", "full", "refund"],
+      stock_status: ["in_stock", "low_stock", "out_of_stock"],
     },
   },
 } as const
