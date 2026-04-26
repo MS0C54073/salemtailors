@@ -133,6 +133,13 @@ const Index = () => {
               </motion.div>
             ))}
           </div>
+          <div className="mt-8 text-center">
+            <Link to="/catalogue">
+              <Button size="lg" variant="outline" className="gap-2">
+                Browse the Shop <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
