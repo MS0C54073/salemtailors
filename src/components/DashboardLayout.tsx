@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { Scissors, LayoutDashboard, ShoppingBag, Calendar, MessageCircle, Users, LogOut, ArrowLeft, Settings as SettingsIcon, Wallet, Image as ImageIcon, UserCircle } from 'lucide-react';
+import { Scissors, LayoutDashboard, ShoppingBag, Calendar, MessageCircle, Users, LogOut, ArrowLeft, Settings as SettingsIcon, Wallet, Image as ImageIcon, UserCircle, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
@@ -21,6 +21,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const staffLinks = [
     { to: '/dashboard/admin', icon: LayoutDashboard, label: 'Home' },
     { to: '/dashboard/admin/orders', icon: ShoppingBag, label: 'Orders' },
+    { to: '/dashboard/admin/catalogue', icon: Package, label: 'Catalogue' },
     { to: '/dashboard/admin/appointments', icon: Calendar, label: 'Calendar' },
     { to: '/dashboard/admin/customers', icon: UserCircle, label: 'Customers' },
     { to: '/dashboard/admin/finance', icon: Wallet, label: 'Finance' },
