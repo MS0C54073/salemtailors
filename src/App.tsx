@@ -26,6 +26,9 @@ import AdminCustomers from "./pages/dashboard/AdminCustomers";
 import AdminFinance from "./pages/dashboard/AdminFinance";
 import AdminPortfolio from "./pages/dashboard/AdminPortfolio";
 import AdminSlots from "./pages/dashboard/AdminSlots";
+import AdminCatalogue from "./pages/dashboard/AdminCatalogue";
+import Catalogue from "./pages/Catalogue";
+import CatalogueItem from "./pages/CatalogueItem";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +42,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/book" element={<Book />} />
+            <Route path="/catalogue" element={<Catalogue />} />
+            <Route path="/catalogue/:slug" element={<CatalogueItem />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={<AdminLogin />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -59,6 +64,7 @@ const App = () => (
             <Route path="/dashboard/admin/customers" element={<ProtectedRoute allowedRoles={['super_admin', 'admin', 'sub_admin']}><AdminCustomers /></ProtectedRoute>} />
             <Route path="/dashboard/admin/finance" element={<ProtectedRoute allowedRoles={['super_admin', 'admin']}><AdminFinance /></ProtectedRoute>} />
             <Route path="/dashboard/admin/portfolio" element={<ProtectedRoute allowedRoles={['super_admin', 'admin', 'sub_admin']}><AdminPortfolio /></ProtectedRoute>} />
+            <Route path="/dashboard/admin/catalogue" element={<ProtectedRoute allowedRoles={['super_admin', 'admin', 'sub_admin']}><AdminCatalogue /></ProtectedRoute>} />
             <Route path="/dashboard/admin/messages" element={<ProtectedRoute allowedRoles={['super_admin', 'admin']}><Messages /></ProtectedRoute>} />
             <Route path="/dashboard/admin/staff" element={<ProtectedRoute allowedRoles={['super_admin']}><StaffManagement /></ProtectedRoute>} />
             <Route path="/dashboard/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
