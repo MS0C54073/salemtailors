@@ -71,7 +71,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
 
       {/* Bottom nav */}
       <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border px-2 py-1 flex justify-around z-40">
-        {links.slice(0, 5).map(link => {
+        {links.slice(0, 4).map(link => {
           const active = location.pathname === link.to;
           return (
             <Link
@@ -86,6 +86,37 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
             </Link>
           );
         })}
+        {links.length > 4 && (
+          <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
+            <SheetTrigger asChild>
+              <button className="flex flex-col items-center py-1.5 px-2 rounded-md text-muted-foreground hover:text-foreground transition-colors">
+                <MoreHorizontal className="h-5 w-5" />
+                <span className="text-[10px] mt-0.5 font-medium">More</span>
+              </button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="rounded-t-2xl">
+              <SheetHeader><SheetTitle className="font-serif text-left">All sections</SheetTitle></SheetHeader>
+              <div className="grid grid-cols-3 gap-2 mt-4 pb-4">
+                {links.slice(4).map(link => {
+                  const active = location.pathname === link.to;
+                  return (
+                    <Link
+                      key={link.to}
+                      to={link.to}
+                      onClick={() => setMoreOpen(false)}
+                      className={`flex flex-col items-center justify-center gap-1 p-4 rounded-lg border ${
+                        active ? 'border-primary bg-primary/5 text-primary' : 'border-border hover:border-primary/50'
+                      }`}
+                    >
+                      <link.icon className="h-5 w-5" />
+                      <span className="text-xs font-medium">{link.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </SheetContent>
+          </Sheet>
+        )}
       </nav>
     </div>
   );
