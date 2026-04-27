@@ -44,7 +44,7 @@ interface UnifiedCustomer {
 
 const TierBadge = ({ tier }: { tier: Tier }) => (
   tier === 'member'
-    ? <Badge className="gap-1 bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 hover:bg-amber-500/20"><Crown className="h-3 w-3" /> Member</Badge>
+    ? <Badge className="gap-1 bg-gold/20 text-earth border-gold/40 hover:bg-gold/30"><Crown className="h-3 w-3" /> Member</Badge>
     : <Badge variant="secondary" className="gap-1"><ShieldCheck className="h-3 w-3" /> Regular</Badge>
 );
 
@@ -200,7 +200,7 @@ const AdminCustomers = () => {
           <div>
             <h1 className="font-serif text-2xl font-bold text-foreground">Customers</h1>
             <p className="text-xs text-muted-foreground">
-              {unified.length} total · <span className="text-amber-600 dark:text-amber-400">{memberCount} Members</span> · {regularCount} Regular
+              {unified.length} total · <span className="text-earth">{memberCount} Members</span> · {regularCount} Regular
             </p>
           </div>
           <div className="flex gap-2">
@@ -250,10 +250,10 @@ const AdminCustomers = () => {
                 <button onClick={() => setDetail(c)} className="text-left flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
-                      c.tier === 'member' ? 'bg-amber-500/15' : 'bg-primary/10'
+                      c.tier === 'member' ? 'bg-gold/20' : 'bg-primary/10'
                     }`}>
                       {c.tier === 'member'
-                        ? <Crown className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                        ? <Crown className="h-4 w-4 text-earth" />
                         : <User className="h-4 w-4 text-primary" />}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -537,7 +537,7 @@ const CustomerDetailDialog = ({
                   </div>
                   <div className="flex flex-wrap gap-2 mt-2 text-xs">
                     {o.total_price && <span className="text-accent font-semibold">{formatKwacha(o.total_price)}</span>}
-                    {o.discount_percent > 0 && <span className="text-amber-600 dark:text-amber-400">−{o.discount_percent}% member</span>}
+                    {o.discount_percent > 0 && <span className="text-earth">−{o.discount_percent}% member</span>}
                     {o.payment_status && <span className="text-muted-foreground capitalize">· {o.payment_status.replace('_', ' ')}</span>}
                   </div>
                   <div className="flex gap-1 mt-2">
