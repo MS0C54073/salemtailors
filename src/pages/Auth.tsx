@@ -1,13 +1,28 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Scissors, ArrowLeft, Loader2 } from 'lucide-react';
+import { Scissors, ArrowLeft, Loader2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+
+const phoneRegex = /^\+?[0-9\s\-()]{7,20}$/;
+
+const signupSchema = z.object({
+  fullName: z.string().trim().min(2, 'Full name is too short').max(100),
+  email: z.string().trim().email('Enter a valid email').max(255),
+  phone: z.string().trim().regex(phoneRegex, 'Enter a valid phone number'),
+  password: z.string().min(6, 'Password must be at least 6 characters').max(72),
+});
+
+const loginSchema = z.object({
+  email: z.string().trim().email('Enter a valid email'),
+  password: z.string().min(6, 'Password is too short'),
+});
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
