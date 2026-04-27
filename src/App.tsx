@@ -13,6 +13,7 @@ import ClientDashboard from "./pages/dashboard/ClientDashboard";
 import ClientOrders from "./pages/dashboard/ClientOrders";
 import NewGarmentRequest from "./pages/dashboard/NewGarmentRequest";
 import ClientAppointments from "./pages/dashboard/ClientAppointments";
+import ClientProfile from "./pages/dashboard/ClientProfile";
 import AdminDashboard from "./pages/dashboard/AdminDashboard";
 import AdminOrders from "./pages/dashboard/AdminOrders";
 import AdminAppointments from "./pages/dashboard/AdminAppointments";
