@@ -17,6 +17,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
     { to: '/dashboard/client/orders', icon: ShoppingBag, label: 'My Orders' },
     { to: '/dashboard/client/new-request', icon: Scissors, label: 'New Request' },
     { to: '/dashboard/client/appointments', icon: Calendar, label: 'Appointments' },
+    { to: '/dashboard/client/profile', icon: Ruler, label: 'Profile' },
     { to: '/dashboard/client/messages', icon: MessageCircle, label: 'Messages' },
   ];
 
