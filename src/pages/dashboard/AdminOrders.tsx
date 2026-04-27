@@ -88,23 +88,45 @@ const AdminOrders = () => {
     if (!form.customer_name.trim() || !form.customer_phone.trim() || !form.description.trim()) {
       return toast.error('Customer name, phone, and description required');
     }
+
+    // Look up tier by phone (registered profile or walk-in customer)
+    const cleanedPhone = form.customer_phone.trim();
+    let isMember = false;
+    const { data: matchProfile } = await supabase.from('profiles').select('tier').eq('phone', cleanedPhone).maybeSingle();
+    if (matchProfile?.tier === 'member') isMember = true;
+    if (!isMember) {
+      const { data: matchCustomer } = await supabase.from('customers').select('tier').eq('phone', cleanedPhone).maybeSingle();
+      if (matchCustomer?.tier === 'member') isMember = true;
+    }
+    let discountPercent = 0;
+    if (isMember) {
+      const { data: settings } = await supabase.from('app_settings').select('member_discount_percent').limit(1).maybeSingle();
+      discountPercent = Number(settings?.member_discount_percent ?? 10);
+    }
+    const basePrice = form.total_price ? Number(form.total_price) : null;
+    const finalPrice = basePrice != null && discountPercent > 0
+      ? Math.round(basePrice * (1 - discountPercent / 100) * 100) / 100
+      : basePrice;
+
     const { error } = await supabase.from('garment_requests').insert({
-      client_id: user?.id, // walk-in: staff is recorded as creator
+      client_id: user?.id,
       customer_name: form.customer_name.trim(),
-      customer_phone: form.customer_phone.trim(),
+      customer_phone: cleanedPhone,
       category: form.category,
       service_type: form.service_type || null,
       description: form.description.trim(),
       due_date: form.due_date || null,
-      total_price: form.total_price ? Number(form.total_price) : null,
-      estimated_cost: form.total_price ? Number(form.total_price) : null,
+      total_price: finalPrice,
+      estimated_cost: basePrice,
       reference_images: form.reference_images,
       measurements: form.measurements,
       notes: form.notes || null,
       status: 'request_submitted',
+      discount_percent: discountPercent,
+      is_member_priority: isMember,
     });
     if (error) return toast.error(error.message);
-    toast.success('Order created');
+    toast.success(isMember ? `Order created with ${discountPercent}% member discount` : 'Order created');
     setOpen(false);
     setForm({
       customer_name: '', customer_phone: '', category: 'casual_wear',
