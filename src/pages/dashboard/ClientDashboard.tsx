@@ -5,7 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ShoppingBag, Plus, Calendar, Clock } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ShoppingBag, Plus, Calendar, Clock, Crown, ShieldCheck } from 'lucide-react';
 import { getStatusInfo, getCategoryLabel } from '@/lib/supabase-helpers';
 import { formatDate, formatDateTime } from '@/lib/admin-helpers';
 
@@ -35,9 +36,14 @@ const ClientDashboard = () => {
       <div className="space-y-6 max-w-lg mx-auto">
         {/* Greeting */}
         <div>
-          <h1 className="font-serif text-2xl font-bold text-foreground">
-            Hello, {profile?.full_name?.split(' ')[0] || 'there'} 👋
-          </h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="font-serif text-2xl font-bold text-foreground">
+              Hello, {profile?.full_name?.split(' ')[0] || 'there'} 👋
+            </h1>
+            {profile?.tier === 'member'
+              ? <Badge className="gap-1 bg-gold/20 text-earth border-gold/40 hover:bg-gold/30"><Crown className="h-3 w-3" /> Member</Badge>
+              : <Badge variant="secondary" className="gap-1"><ShieldCheck className="h-3 w-3" /> Regular</Badge>}
+          </div>
           <p className="text-sm text-muted-foreground">What would you like today?</p>
         </div>
 

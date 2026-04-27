@@ -1,7 +1,7 @@
 import { ReactNode, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { Scissors, LayoutDashboard, ShoppingBag, Calendar, MessageCircle, Users, LogOut, ArrowLeft, Settings as SettingsIcon, Wallet, Image as ImageIcon, UserCircle, Package, MoreHorizontal } from 'lucide-react';
+import { Scissors, LayoutDashboard, ShoppingBag, Calendar, MessageCircle, Users, LogOut, ArrowLeft, Settings as SettingsIcon, Wallet, Image as ImageIcon, UserCircle, Package, MoreHorizontal, Ruler } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
@@ -17,6 +17,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
     { to: '/dashboard/client/orders', icon: ShoppingBag, label: 'My Orders' },
     { to: '/dashboard/client/new-request', icon: Scissors, label: 'New Request' },
     { to: '/dashboard/client/appointments', icon: Calendar, label: 'Appointments' },
+    { to: '/dashboard/client/profile', icon: Ruler, label: 'Profile' },
     { to: '/dashboard/client/messages', icon: MessageCircle, label: 'Messages' },
   ];
 

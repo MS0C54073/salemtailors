@@ -38,7 +38,9 @@ const AdminOrders = () => {
 
   const fetchOrders = async () => {
     if (!user) return;
-    let query = supabase.from('garment_requests').select('*').order('created_at', { ascending: false });
+    let query = supabase.from('garment_requests').select('*')
+      .order('is_member_priority', { ascending: false })
+      .order('created_at', { ascending: false });
     if (role === 'sub_admin') query = query.eq('assigned_to', user.id);
     const { data } = await query;
     setOrders(data || []);
@@ -88,23 +90,45 @@ const AdminOrders = () => {
     if (!form.customer_name.trim() || !form.customer_phone.trim() || !form.description.trim()) {
       return toast.error('Customer name, phone, and description required');
     }
+
+    // Look up tier by phone (registered profile or walk-in customer)
+    const cleanedPhone = form.customer_phone.trim();
+    let isMember = false;
+    const { data: matchProfile } = await supabase.from('profiles').select('tier').eq('phone', cleanedPhone).maybeSingle();
+    if (matchProfile?.tier === 'member') isMember = true;
+    if (!isMember) {
+      const { data: matchCustomer } = await supabase.from('customers').select('tier').eq('phone', cleanedPhone).maybeSingle();
+      if (matchCustomer?.tier === 'member') isMember = true;
+    }
+    let discountPercent = 0;
+    if (isMember) {
+      const { data: settings } = await supabase.from('app_settings').select('member_discount_percent').limit(1).maybeSingle();
+      discountPercent = Number(settings?.member_discount_percent ?? 10);
+    }
+    const basePrice = form.total_price ? Number(form.total_price) : null;
+    const finalPrice = basePrice != null && discountPercent > 0
+      ? Math.round(basePrice * (1 - discountPercent / 100) * 100) / 100
+      : basePrice;
+
     const { error } = await supabase.from('garment_requests').insert({
-      client_id: user?.id, // walk-in: staff is recorded as creator
+      client_id: user?.id,
       customer_name: form.customer_name.trim(),
-      customer_phone: form.customer_phone.trim(),
+      customer_phone: cleanedPhone,
       category: form.category,
       service_type: form.service_type || null,
       description: form.description.trim(),
       due_date: form.due_date || null,
-      total_price: form.total_price ? Number(form.total_price) : null,
-      estimated_cost: form.total_price ? Number(form.total_price) : null,
+      total_price: finalPrice,
+      estimated_cost: basePrice,
       reference_images: form.reference_images,
       measurements: form.measurements,
       notes: form.notes || null,
       status: 'request_submitted',
+      discount_percent: discountPercent,
+      is_member_priority: isMember,
     });
     if (error) return toast.error(error.message);
-    toast.success('Order created');
+    toast.success(isMember ? `Order created with ${discountPercent}% member discount` : 'Order created');
     setOpen(false);
     setForm({
       customer_name: '', customer_phone: '', category: 'casual_wear',
@@ -173,12 +197,19 @@ const AdminOrders = () => {
           {filtered.map(order => {
             const status = getStatusFlow(order.status);
             return (
-              <Card key={order.id} className="p-4 space-y-3">
+              <Card key={order.id} className={`p-4 space-y-3 ${order.is_member_priority ? 'border-gold/40 bg-gold/5' : ''}`}>
                 <div className="flex justify-between items-start gap-2">
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-foreground truncate">
-                      {order.customer_name || getCategoryLabel(order.category)}
-                    </p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold text-foreground truncate">
+                        {order.customer_name || getCategoryLabel(order.category)}
+                      </p>
+                      {order.is_member_priority && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gold/20 text-earth border border-gold/40 font-semibold">
+                          ★ MEMBER
+                        </span>
+                      )}
+                    </div>
                     {order.customer_phone && (
                       <p className="text-xs text-muted-foreground flex items-center gap-1">
                         <Phone className="h-3 w-3" /> {order.customer_phone}

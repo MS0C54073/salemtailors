@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          id: string
+          member_discount_percent: number
+          member_priority_enabled: boolean
+          notification_email: string | null
+          notification_whatsapp: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          member_discount_percent?: number
+          member_priority_enabled?: boolean
+          notification_email?: string | null
+          notification_whatsapp?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          member_discount_percent?: number
+          member_priority_enabled?: boolean
+          notification_email?: string | null
+          notification_whatsapp?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       appointment_slots: {
         Row: {
           appointment_id: string | null
@@ -268,6 +298,50 @@ export type Database = {
           },
         ]
       }
+      customer_measurements: {
+        Row: {
+          created_at: string
+          customer_id: string | null
+          id: string
+          measurements: Json
+          notes: string | null
+          profile_user_id: string | null
+          template: Database["public"]["Enums"]["measurement_template"]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          measurements?: Json
+          notes?: string | null
+          profile_user_id?: string | null
+          template: Database["public"]["Enums"]["measurement_template"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          measurements?: Json
+          notes?: string | null
+          profile_user_id?: string | null
+          template?: Database["public"]["Enums"]["measurement_template"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_measurements_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           created_at: string
@@ -278,6 +352,8 @@ export type Database = {
           measurements: Json | null
           notes: string | null
           phone: string
+          tier: Database["public"]["Enums"]["customer_tier"]
+          tier_since: string | null
           updated_at: string
         }
         Insert: {
@@ -289,6 +365,8 @@ export type Database = {
           measurements?: Json | null
           notes?: string | null
           phone: string
+          tier?: Database["public"]["Enums"]["customer_tier"]
+          tier_since?: string | null
           updated_at?: string
         }
         Update: {
@@ -300,6 +378,8 @@ export type Database = {
           measurements?: Json | null
           notes?: string | null
           phone?: string
+          tier?: Database["public"]["Enums"]["customer_tier"]
+          tier_since?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -347,13 +427,16 @@ export type Database = {
           customer_name: string | null
           customer_phone: string | null
           description: string
+          discount_percent: number
           due_date: string | null
           estimated_cost: number | null
           event_date: string | null
           id: string
+          is_member_priority: boolean
           measurements: Json | null
           notes: string | null
           payment_status: Database["public"]["Enums"]["payment_status"] | null
+          preferences: Json
           reference_images: string[] | null
           service_type: string | null
           status: Database["public"]["Enums"]["order_status"]
@@ -369,13 +452,16 @@ export type Database = {
           customer_name?: string | null
           customer_phone?: string | null
           description: string
+          discount_percent?: number
           due_date?: string | null
           estimated_cost?: number | null
           event_date?: string | null
           id?: string
+          is_member_priority?: boolean
           measurements?: Json | null
           notes?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"] | null
+          preferences?: Json
           reference_images?: string[] | null
           service_type?: string | null
           status?: Database["public"]["Enums"]["order_status"]
@@ -391,13 +477,16 @@ export type Database = {
           customer_name?: string | null
           customer_phone?: string | null
           description?: string
+          discount_percent?: number
           due_date?: string | null
           estimated_cost?: number | null
           event_date?: string | null
           id?: string
+          is_member_priority?: boolean
           measurements?: Json | null
           notes?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"] | null
+          preferences?: Json
           reference_images?: string[] | null
           service_type?: string | null
           status?: Database["public"]["Enums"]["order_status"]
@@ -530,6 +619,8 @@ export type Database = {
           full_name: string
           id: string
           phone: string
+          tier: Database["public"]["Enums"]["customer_tier"]
+          tier_since: string | null
           updated_at: string
           user_id: string
         }
@@ -540,6 +631,8 @@ export type Database = {
           full_name: string
           id?: string
           phone: string
+          tier?: Database["public"]["Enums"]["customer_tier"]
+          tier_since?: string | null
           updated_at?: string
           user_id: string
         }
@@ -550,6 +643,8 @@ export type Database = {
           full_name?: string
           id?: string
           phone?: string
+          tier?: Database["public"]["Enums"]["customer_tier"]
+          tier_since?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -601,6 +696,7 @@ export type Database = {
         | "rescheduled"
       appointment_type: "consultation" | "measurement" | "fitting" | "pickup"
       catalogue_status: "active" | "draft" | "sold_out"
+      customer_tier: "regular" | "member"
       expense_category:
         | "fabric"
         | "supplies"
@@ -619,6 +715,7 @@ export type Database = {
         | "formal_wear"
         | "alterations"
         | "custom_designs"
+      measurement_template: "male" | "female" | "child"
       order_status:
         | "request_submitted"
         | "consultation_scheduled"
@@ -768,6 +865,7 @@ export const Constants = {
       ],
       appointment_type: ["consultation", "measurement", "fitting", "pickup"],
       catalogue_status: ["active", "draft", "sold_out"],
+      customer_tier: ["regular", "member"],
       expense_category: [
         "fabric",
         "supplies",
@@ -788,6 +886,7 @@ export const Constants = {
         "alterations",
         "custom_designs",
       ],
+      measurement_template: ["male", "female", "child"],
       order_status: [
         "request_submitted",
         "consultation_scheduled",

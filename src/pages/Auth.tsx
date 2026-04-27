@@ -1,13 +1,28 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Scissors, ArrowLeft, Loader2 } from 'lucide-react';
+import { Scissors, ArrowLeft, Loader2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+
+const phoneRegex = /^\+?[0-9\s\-()]{7,20}$/;
+
+const signupSchema = z.object({
+  fullName: z.string().trim().min(2, 'Full name is too short').max(100),
+  email: z.string().trim().email('Enter a valid email').max(255),
+  phone: z.string().trim().regex(phoneRegex, 'Enter a valid phone number'),
+  password: z.string().min(6, 'Password must be at least 6 characters').max(72),
+});
+
+const loginSchema = z.object({
+  email: z.string().trim().email('Enter a valid email'),
+  password: z.string().min(6, 'Password is too short'),
+});
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -30,23 +45,30 @@ const Auth = () => {
 
     try {
       if (isLogin) {
+        const parsed = loginSchema.safeParse({ email: form.email, password: form.password });
+        if (!parsed.success) {
+          toast.error(parsed.error.issues[0].message);
+          setLoading(false);
+          return;
+        }
         const { error } = await supabase.auth.signInWithPassword({
-          email: form.email,
-          password: form.password,
+          email: parsed.data.email,
+          password: parsed.data.password,
         });
         if (error) throw error;
         toast.success('Welcome back!');
       } else {
-        if (!form.phone.trim()) {
-          toast.error('Phone number is required');
+        const parsed = signupSchema.safeParse(form);
+        if (!parsed.success) {
+          toast.error(parsed.error.issues[0].message);
           setLoading(false);
           return;
         }
         const { error } = await supabase.auth.signUp({
-          email: form.email,
-          password: form.password,
+          email: parsed.data.email,
+          password: parsed.data.password,
           options: {
-            data: { full_name: form.fullName, phone: form.phone },
+            data: { full_name: parsed.data.fullName, phone: parsed.data.phone },
             emailRedirectTo: window.location.origin,
           },
         });
@@ -71,7 +93,7 @@ const Auth = () => {
 
       <div className="flex-1 flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-sm">
-          <div className="text-center mb-8">
+          <div className="text-center mb-6">
             <div className="w-12 h-12 rounded-full bg-primary/10 mx-auto mb-3 flex items-center justify-center">
               <Scissors className="h-6 w-6 text-primary" />
             </div>
@@ -82,6 +104,17 @@ const Auth = () => {
               {isLogin ? 'Sign in to your Salem Tailors account' : 'Join Salem Tailors today'}
             </p>
           </div>
+
+          {!isLogin && (
+            <div className="mb-5 p-3 rounded-md bg-accent/10 border border-accent/30 flex gap-2 text-xs text-foreground/80">
+              <Sparkles className="h-4 w-4 text-accent shrink-0 mt-0.5" />
+              <p>
+                You'll start as a <span className="font-semibold">Regular customer</span>.
+                Frequent clients are upgraded to <span className="font-semibold">Member</span> for
+                discounts and priority service.
+              </p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
