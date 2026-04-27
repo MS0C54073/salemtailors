@@ -38,7 +38,9 @@ const AdminOrders = () => {
 
   const fetchOrders = async () => {
     if (!user) return;
-    let query = supabase.from('garment_requests').select('*').order('created_at', { ascending: false });
+    let query = supabase.from('garment_requests').select('*')
+      .order('is_member_priority', { ascending: false })
+      .order('created_at', { ascending: false });
     if (role === 'sub_admin') query = query.eq('assigned_to', user.id);
     const { data } = await query;
     setOrders(data || []);
