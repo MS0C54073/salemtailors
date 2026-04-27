@@ -197,12 +197,19 @@ const AdminOrders = () => {
           {filtered.map(order => {
             const status = getStatusFlow(order.status);
             return (
-              <Card key={order.id} className="p-4 space-y-3">
+              <Card key={order.id} className={`p-4 space-y-3 ${order.is_member_priority ? 'border-gold/40 bg-gold/5' : ''}`}>
                 <div className="flex justify-between items-start gap-2">
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-foreground truncate">
-                      {order.customer_name || getCategoryLabel(order.category)}
-                    </p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold text-foreground truncate">
+                        {order.customer_name || getCategoryLabel(order.category)}
+                      </p>
+                      {order.is_member_priority && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gold/20 text-earth border border-gold/40 font-semibold">
+                          ★ MEMBER
+                        </span>
+                      )}
+                    </div>
                     {order.customer_phone && (
                       <p className="text-xs text-muted-foreground flex items-center gap-1">
                         <Phone className="h-3 w-3" /> {order.customer_phone}
