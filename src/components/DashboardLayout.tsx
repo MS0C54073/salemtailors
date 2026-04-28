@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Scissors, LayoutDashboard, ShoppingBag, Calendar, MessageCircle, Users, LogOut, ArrowLeft, Settings as SettingsIcon, Wallet, Image as ImageIcon, UserCircle, Package, MoreHorizontal, Ruler } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const [moreOpen, setMoreOpen] = useState(false);
@@ -54,6 +55,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
         </div>
         <div className="flex items-center gap-1">
           <span className="text-xs text-muted-foreground capitalize hidden sm:inline">{role?.replace('_', ' ')}</span>
+          <ThemeToggle />
           <Link to="/dashboard/settings">
             <Button variant="ghost" size="icon" title="Settings">
               <SettingsIcon className="h-4 w-4" />
