@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Scissors, Calendar, MessageCircle, ArrowRight, Star, MapPin, Phone, Navigation, PhoneCall, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog';
@@ -47,6 +48,7 @@ const Index = () => {
             <span className="font-serif text-lg font-bold text-foreground">Salem Tailors</span>
           </Link>
           <div className="flex items-center gap-1 sm:gap-2">
+            <ThemeToggle />
             <Link to="/catalogue" className="hidden sm:inline-flex">
               <Button variant="ghost" size="sm">Shop</Button>
             </Link>
