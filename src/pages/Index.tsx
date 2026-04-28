@@ -146,6 +146,22 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Animated workshop scene */}
+      <section className="py-12 px-4 bg-background">
+        <div className="container">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-6"
+          >
+            <h2 className="font-serif text-3xl font-bold text-foreground mb-2">A Day at Salem Tailors</h2>
+            <p className="text-muted-foreground">From the workshop to your wardrobe</p>
+          </motion.div>
+          <TailorScene />
+        </div>
+      </section>
+
       {/* How It Works */}
       <section className="py-16 px-4 bg-card">
         <div className="container">
