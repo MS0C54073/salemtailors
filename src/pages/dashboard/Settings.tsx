@@ -86,8 +86,57 @@ const Settings = () => {
       <div className="max-w-2xl mx-auto space-y-6">
         <div>
           <h1 className="font-serif text-2xl font-bold text-foreground">Settings</h1>
-          <p className="text-sm text-muted-foreground">Manage your profile and password</p>
+          <p className="text-sm text-muted-foreground">Manage your preferences, profile and password</p>
         </div>
+
+        {/* Preferences */}
+        <Card className="p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Palette className="h-5 w-5 text-primary" />
+            <h2 className="font-serif text-lg font-semibold text-foreground">Appearance</h2>
+          </div>
+          <div className="space-y-3">
+            <Label>Default theme</Label>
+            <p className="text-xs text-muted-foreground -mt-2">
+              Choose how Salem Tailors looks. Your choice is saved on this device.
+            </p>
+            <RadioGroup
+              value={currentTheme}
+              onValueChange={(val) => {
+                setTheme(val);
+                toast.success(`Theme set to ${val}`);
+              }}
+              className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1"
+            >
+              {[
+                { value: 'light', label: 'Light', icon: Sun },
+                { value: 'dark', label: 'Dark', icon: Moon },
+                { value: 'system', label: 'System', icon: Monitor },
+              ].map(opt => {
+                const Icon = opt.icon;
+                const active = currentTheme === opt.value;
+                return (
+                  <Label
+                    key={opt.value}
+                    htmlFor={`theme-${opt.value}`}
+                    className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${
+                      active ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted'
+                    }`}
+                  >
+                    <RadioGroupItem id={`theme-${opt.value}`} value={opt.value} />
+                    <Icon className="h-4 w-4 text-primary" />
+                    <span className="font-medium text-foreground">{opt.label}</span>
+                  </Label>
+                );
+              })}
+            </RadioGroup>
+            {currentTheme === 'system' && (
+              <p className="text-xs text-muted-foreground">
+                Currently following your device: <span className="font-medium text-foreground">{resolvedTheme}</span>
+              </p>
+            )}
+          </div>
+        </Card>
 
         {/* Profile */}
         <Card className="p-5">
