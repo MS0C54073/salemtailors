@@ -13,6 +13,8 @@ import { toast } from 'sonner';
 
 const Settings = () => {
   const { user } = useAuth();
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const currentTheme = theme || 'light';
   const [profile, setProfile] = useState({ full_name: '', phone: '', email: '' });
   const [password, setPassword] = useState({ current: '', next: '', confirm: '' });
   const [loadingProfile, setLoadingProfile] = useState(false);
