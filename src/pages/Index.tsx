@@ -16,7 +16,7 @@ const PHONE_NUMBERS = ['+260979287496', '+260978097202'];
 
 const services = [
   { icon: '👗', title: 'Chitenge Wear', desc: 'Beautiful African prints for men & women' },
-  { icon: '💒', title: 'Wedding Garments', desc: 'Bridal gowns, suits & bridesmaids' },
+  { icon: '🎒', title: 'Bags', desc: 'Backpacks, laptop bags, clutch purses, school bags & more' },
   { icon: '👔', title: 'Formal & Casual', desc: 'Professional and everyday wear' },
   { icon: '✂️', title: 'Alterations', desc: 'Perfect fit adjustments' },
   { icon: '🎨', title: 'Custom Designs', desc: 'Bring your vision to life' },
