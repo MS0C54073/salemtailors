@@ -223,28 +223,39 @@ const Index = () => {
       </section>
 
       {/* How It Works */}
-      <section className="py-16 px-4 bg-card">
-        <div className="container">
-          <h2 className="font-serif text-3xl font-bold text-center text-foreground mb-10">How It Works</h2>
-          <div className="grid md:grid-cols-3 gap-6 max-w-2xl mx-auto">
+      <section className="py-20 px-4 bg-card relative overflow-hidden">
+        <div className="absolute inset-0 bg-grain opacity-30 pointer-events-none" />
+        <div className="container relative">
+          <div className="text-center mb-12">
+            <span className="text-[11px] uppercase tracking-[0.3em] text-primary font-medium">The Journey</span>
+            <h2 className="font-serif text-4xl md:text-5xl font-semibold text-foreground mt-2">
+              How It <em className="font-normal text-gradient-gold">Works</em>
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8 max-w-3xl mx-auto relative">
+            {/* Connecting line */}
+            <div className="hidden md:block absolute top-7 left-[16%] right-[16%] h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
             {[
-              { step: '1', icon: <MessageCircle className="h-6 w-6" />, title: 'Submit Request', desc: 'Tell us what you need with reference images' },
-              { step: '2', icon: <Calendar className="h-6 w-6" />, title: 'Book Appointment', desc: 'Schedule consultation & measurements' },
-              { step: '3', icon: <Scissors className="h-6 w-6" />, title: 'Track Progress', desc: 'Follow your garment from fabric to finish' },
+              { step: '01', icon: <MessageCircle className="h-5 w-5" />, title: 'Submit Request', desc: 'Tell us what you need with reference images' },
+              { step: '02', icon: <Calendar className="h-5 w-5" />, title: 'Book Appointment', desc: 'Schedule consultation & measurements' },
+              { step: '03', icon: <Scissors className="h-5 w-5" />, title: 'Track Progress', desc: 'Follow your garment from fabric to finish' },
             ].map((item, i) => (
               <motion.div
                 key={item.step}
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.15 }}
-                className="text-center"
+                transition={{ delay: i * 0.15, duration: 0.6 }}
+                className="text-center relative"
               >
-                <div className="w-12 h-12 rounded-full bg-primary/10 text-primary mx-auto mb-3 flex items-center justify-center">
+                <div className="w-14 h-14 rounded-full bg-background border border-gold/40 text-primary mx-auto mb-4 flex items-center justify-center shadow-warm relative z-10">
                   {item.icon}
                 </div>
-                <h3 className="font-serif font-semibold text-foreground mb-1">{item.title}</h3>
-                <p className="text-sm text-muted-foreground">{item.desc}</p>
+                <span className="text-[10px] uppercase tracking-[0.3em] text-gold font-medium block mb-1">
+                  Step {item.step}
+                </span>
+                <h3 className="font-serif text-lg font-semibold text-foreground mb-1">{item.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed max-w-[14rem] mx-auto">{item.desc}</p>
               </motion.div>
             ))}
           </div>
