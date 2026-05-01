@@ -68,43 +68,85 @@ const Index = () => {
       {/* Hero */}
       <section className="relative pt-14 overflow-hidden">
         <div className="absolute inset-0 pt-14">
-          <img src={heroBg} alt="Salem Tailors workshop" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-b from-foreground/70 via-foreground/50 to-background" />
+          <img
+            src={heroBg}
+            alt="Salem Tailors workshop"
+            className="w-full h-full object-cover animate-kenburns"
+          />
+          {/* Layered cinematic gradients */}
+          <div className="absolute inset-0 bg-gradient-to-b from-foreground/80 via-foreground/55 to-background" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_30%,hsl(var(--gold)/0.18),transparent_60%)]" />
+          <div className="absolute inset-0 bg-grain opacity-40 mix-blend-overlay pointer-events-none" />
         </div>
-        <div className="relative container px-4 py-20 md:py-32">
+
+        <div className="relative container px-4 py-24 md:py-36">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-lg"
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-2xl"
           >
-            <div className="flex items-center gap-1 mb-3">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-4 w-4 fill-gold text-gold" />
-              ))}
-              <span className="text-sm text-gold-light ml-1 font-medium">Trusted in Lusaka</span>
+            <div className="flex items-center gap-2 mb-5">
+              <span className="h-px w-10 bg-gold/70" />
+              <span className="text-[11px] uppercase tracking-[0.3em] text-gold-light font-medium">
+                Atelier · Lusaka · Est. Salem Tailors
+              </span>
             </div>
-            <h1 className="font-serif text-4xl md:text-5xl font-bold text-primary-foreground leading-tight mb-4">
-              Crafting Your Perfect Style
+
+            <h1 className="font-serif text-5xl md:text-7xl font-semibold leading-[1.02] mb-5 text-primary-foreground">
+              Crafting your
+              <span className="block italic font-normal text-gradient-warm animate-shimmer bg-[linear-gradient(90deg,hsl(var(--gold-light)),hsl(var(--gold)),hsl(var(--terracotta)),hsl(var(--gold)),hsl(var(--gold-light)))]">
+                perfect silhouette
+              </span>
             </h1>
-            <p className="text-primary-foreground/80 text-lg mb-6 leading-relaxed">
-              Premium African fashion, wedding garments & custom designs. 
-              From chitenge to couture — tailored just for you.
+
+            <p className="text-primary-foreground/85 text-base md:text-lg mb-3 leading-relaxed max-w-xl font-light">
+              Hand-finished African couture, bespoke wedding garments and signature
+              chitenge — measured, cut and sewn with the quiet patience of a craft.
             </p>
+
+            <div className="flex items-center gap-1 mb-8">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="h-3.5 w-3.5 fill-gold text-gold" />
+              ))}
+              <span className="text-xs text-primary-foreground/70 ml-2 tracking-wide">
+                Trusted across Lusaka since day one
+              </span>
+            </div>
+
             <div className="flex flex-col sm:flex-row gap-3">
               <Link to="/book">
-                <Button size="lg" className="w-full sm:w-auto bg-primary hover:bg-primary/90 shadow-warm gap-2">
+                <Button size="lg" className="w-full sm:w-auto bg-primary hover:bg-primary/90 shadow-elegant gap-2 px-8 h-12">
                   Book an Appointment <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <a href="https://wa.me/260979287496" target="_blank" rel="noopener noreferrer">
-                <Button size="lg" className="w-full sm:w-auto bg-[#25D366] hover:bg-[#1ebe57] text-white shadow-warm gap-2 border-0">
+                <Button size="lg" className="w-full sm:w-auto bg-[#25D366] hover:bg-[#1ebe57] text-white shadow-warm gap-2 border-0 h-12">
                   <MessageCircle className="h-4 w-4" />
                   Chat on WhatsApp
                 </Button>
               </a>
             </div>
           </motion.div>
+        </div>
+
+        {/* Soft fade to next section */}
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-b from-transparent to-background pointer-events-none" />
+      </section>
+
+      {/* Editorial pull-quote */}
+      <section className="px-4 py-14 md:py-20">
+        <div className="container max-w-3xl text-center">
+          <div className="ornament mb-6 mx-auto max-w-xs">
+            <Scissors className="h-4 w-4 text-gold shrink-0" />
+          </div>
+          <p className="font-serif italic text-2xl md:text-3xl leading-snug text-foreground">
+            “A garment, well made, is a quiet conversation between fabric, body
+            and the hands that bring them together.”
+          </p>
+          <p className="mt-4 text-xs uppercase tracking-[0.3em] text-muted-foreground">
+            — The Salem Atelier
+          </p>
         </div>
       </section>
 
@@ -115,30 +157,48 @@ const Index = () => {
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-10"
+            className="text-center mb-12"
           >
-            <h2 className="font-serif text-3xl font-bold text-foreground mb-2">Our Services</h2>
-            <p className="text-muted-foreground">Quality craftsmanship for every occasion</p>
+            <span className="text-[11px] uppercase tracking-[0.3em] text-primary font-medium">
+              The House of Salem
+            </span>
+            <h2 className="font-serif text-4xl md:text-5xl font-semibold text-foreground mt-2 mb-3">
+              Our <em className="font-normal text-gradient-gold">Services</em>
+            </h2>
+            <p className="text-muted-foreground max-w-md mx-auto">
+              Six disciplines, one quiet pursuit — clothes made to be lived in.
+            </p>
           </motion.div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {services.map((s, i) => (
               <motion.div
                 key={s.title}
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
-                className="bg-card rounded-lg p-4 border border-border hover:shadow-warm transition-shadow"
+                transition={{ delay: i * 0.07, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                whileHover={{ y: -4 }}
+                className="group relative bg-card rounded-xl p-5 border border-border hover:border-primary/40 hover:shadow-elegant transition-all overflow-hidden"
               >
-                <span className="text-2xl mb-2 block">{s.icon}</span>
-                <h3 className="font-serif font-semibold text-foreground text-sm mb-1">{s.title}</h3>
-                <p className="text-xs text-muted-foreground">{s.desc}</p>
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-gradient-to-br from-gold/10 to-terracotta/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative">
+                  <span className="text-3xl mb-3 block transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3 origin-bottom-left">
+                    {s.icon}
+                  </span>
+                  <h3 className="font-serif font-semibold text-foreground text-base mb-1">{s.title}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
+                  <span className="mt-3 inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                    Discover <ArrowRight className="h-3 w-3" />
+                  </span>
+                </div>
               </motion.div>
             ))}
           </div>
-          <div className="mt-8 text-center">
+          <div className="mt-10 text-center">
             <Link to="/catalogue">
-              <Button size="lg" variant="outline" className="gap-2">
+              <Button size="lg" variant="outline" className="gap-2 border-primary/40 hover:bg-primary hover:text-primary-foreground transition-colors">
                 Browse the Shop <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
