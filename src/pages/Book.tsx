@@ -39,35 +39,17 @@ const Book = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Salem Tailors operates in Lusaka, Zambia (CAT, UTC+02:00 — same as Cairo).
-  // Always compute "now" relative to that timezone, regardless of the user's device locale.
-  const LUSAKA_TZ = 'Africa/Lusaka';
-
-  /** Returns the current wall-clock date/time in Africa/Lusaka as a plain Date
-   *  whose getFullYear/getMonth/getDate/getHours/getMinutes reflect Lusaka time. */
-  const lusakaNow = (): Date => {
-    const parts = new Intl.DateTimeFormat('en-GB', {
-      timeZone: LUSAKA_TZ,
-      year: 'numeric', month: '2-digit', day: '2-digit',
-      hour: '2-digit', minute: '2-digit', second: '2-digit',
-      hour12: false,
-    }).formatToParts(new Date());
-    const get = (t: string) => Number(parts.find(p => p.type === t)?.value);
-    // Construct a local Date with Lusaka's wall-clock components (we treat it as a naive datetime).
-    return new Date(get('year'), get('month') - 1, get('day'), get('hour') === 24 ? 0 : get('hour'), get('minute'), get('second'));
-  };
-
   const pad = (n: number) => String(n).padStart(2, '0');
   const fmtDate = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   const fmtTime = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
-  // Min date = today in Lusaka time (so users can book same-day if a slot is still available).
-  const minDate = fmtDate(lusakaNow());
+  // Min date = today on the user's device.
+  const minDate = fmtDate(new Date());
 
   // Auto-detect a sensible default date & time on first load (still editable).
-  // Defaults to tomorrow (Lusaka) at 10:00, skipping Sunday.
+  // Defaults to tomorrow at 10:00 (device local time), skipping Sunday.
   useEffect(() => {
-    const suggested = lusakaNow();
+    const suggested = new Date();
     suggested.setDate(suggested.getDate() + 1);
     if (suggested.getDay() === 0) suggested.setDate(suggested.getDate() + 1);
     setForm(f => ({
@@ -78,8 +60,9 @@ const Book = () => {
   }, []);
 
   const useNow = () => {
-    // Real-time "now" in Lusaka, then suggest the next available slot within shop hours (08:00–17:00).
-    const now = lusakaNow();
+    // Real-time "now" from the user's system clock, then suggest the next available slot
+    // within shop hours (08:00–17:00).
+    const now = new Date();
     // Add 60 minutes lead time, then round up to the next half-hour.
     now.setMinutes(now.getMinutes() + 60);
     const m = now.getMinutes();
@@ -103,7 +86,7 @@ const Book = () => {
       now.setHours(10, 0, 0, 0);
     }
     setForm(f => ({ ...f, date: fmtDate(now), time: fmtTime(now) }));
-    toast.success(`Set to ${fmtDate(now)} ${fmtTime(now)} (Lusaka time) — feel free to edit.`);
+    toast.success(`Set to ${fmtDate(now)} ${fmtTime(now)} — feel free to edit.`);
   };
 
   const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
