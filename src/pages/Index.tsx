@@ -130,7 +130,12 @@ const Index = () => {
                   Book an Appointment <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <a href="https://wa.me/260979287496" target="_blank" rel="noopener noreferrer">
+              <a
+                href={buildWaUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => openWhatsApp(e, buildWaUrl())}
+              >
                 <Button size="lg" className="w-full sm:w-auto bg-[#25D366] hover:bg-[#1ebe57] text-white shadow-warm gap-2 border-0 h-12">
                   <MessageCircle className="h-4 w-4" />
                   Chat on WhatsApp
