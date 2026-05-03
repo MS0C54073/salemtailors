@@ -134,20 +134,28 @@ const Index = () => {
                 Quick enquiry on WhatsApp
               </p>
               <div className="flex flex-wrap gap-2">
-                {services.slice(0, 4).map((s) => (
-                  <a
-                    key={s.title}
-                    href={`https://wa.me/260979287496?text=${encodeURIComponent(
-                      `Hello Salem Tailors, I'm interested in your ${s.title} service. Could you tell me more?`
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-primary-foreground/10 hover:bg-[#25D366] hover:text-white text-primary-foreground border border-primary-foreground/20 hover:border-[#25D366] backdrop-blur-sm transition-all"
-                  >
-                    <MessageCircle className="h-3 w-3" />
-                    {s.title}
-                  </a>
-                ))}
+                {services.slice(0, 4).map((s) => {
+                  const waUrl = `https://wa.me/260979287496?text=${encodeURIComponent(
+                    `Hello Salem Tailors, I'm interested in your ${s.title} service. Could you tell me more?`
+                  )}`;
+                  return (
+                    <a
+                      key={s.title}
+                      href={waUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const win = window.open(waUrl, '_blank', 'noopener,noreferrer');
+                        if (!win) window.location.href = waUrl;
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-primary-foreground/10 hover:bg-[#25D366] hover:text-white text-primary-foreground border border-primary-foreground/20 hover:border-[#25D366] backdrop-blur-sm transition-all cursor-pointer"
+                    >
+                      <MessageCircle className="h-3 w-3" />
+                      {s.title}
+                    </a>
+                  );
+                })}
               </div>
             </div>
           </motion.div>
