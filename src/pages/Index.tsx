@@ -14,6 +14,16 @@ import heroBg from '@/assets/hero-bg.jpg';
 
 const PHONE_NUMBERS = ['+260979287496', '+260978097202'];
 
+const WHATSAPP_NUMBER = '260979287496';
+const buildWaUrl = (message?: string) =>
+  `https://wa.me/${WHATSAPP_NUMBER}${message ? `?text=${encodeURIComponent(message)}` : ''}`;
+const openWhatsApp = (e: React.MouseEvent, url: string) => {
+  e.preventDefault();
+  e.stopPropagation();
+  const win = window.open(url, '_blank', 'noopener,noreferrer');
+  if (!win) window.location.href = url;
+};
+
 const services = [
   { icon: '👗', title: 'Chitenge Wear', desc: 'Beautiful African prints for men & women' },
   { icon: '🎒', title: 'Bags', desc: 'Backpacks, laptop bags, clutch purses, school bags & more' },
@@ -100,7 +110,7 @@ const Index = () => {
               </span>
             </h1>
 
-            <p className="text-primary-foreground/85 text-base md:text-lg mb-3 leading-relaxed max-w-xl font-light">
+            <p className="text-primary-foreground/95 text-base md:text-lg mb-3 leading-relaxed max-w-xl font-light drop-shadow-sm">
               Hand-finished African couture, bespoke bags and signature chitenge
               — measured, cut and sewn with the quiet patience of a craft.
             </p>
@@ -120,7 +130,12 @@ const Index = () => {
                   Book an Appointment <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <a href="https://wa.me/260979287496" target="_blank" rel="noopener noreferrer">
+              <a
+                href={buildWaUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => openWhatsApp(e, buildWaUrl())}
+              >
                 <Button size="lg" className="w-full sm:w-auto bg-[#25D366] hover:bg-[#1ebe57] text-white shadow-warm gap-2 border-0 h-12">
                   <MessageCircle className="h-4 w-4" />
                   Chat on WhatsApp
@@ -130,7 +145,7 @@ const Index = () => {
 
             {/* Quick WhatsApp service chips */}
             <div className="mt-6">
-              <p className="text-[11px] uppercase tracking-[0.25em] text-primary-foreground/60 mb-2">
+              <p className="text-[11px] uppercase tracking-[0.25em] text-primary-foreground/80 mb-2">
                 Quick enquiry on WhatsApp
               </p>
               <div className="flex flex-wrap gap-2">
@@ -221,13 +236,11 @@ const Index = () => {
                   <h3 className="font-serif font-semibold text-foreground text-base mb-1">{s.title}</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
                   <a
-                    href={`https://wa.me/260979287496?text=${encodeURIComponent(
-                      `Hello Salem Tailors, I'm interested in your ${s.title} service. Could you tell me more?`
-                    )}`}
+                    href={buildWaUrl(`Hello Salem Tailors, I'm interested in your ${s.title} service. Could you tell me more?`)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-[#25D366] hover:text-[#1ebe57] transition-colors"
+                    onClick={(e) => openWhatsApp(e, buildWaUrl(`Hello Salem Tailors, I'm interested in your ${s.title} service. Could you tell me more?`))}
+                    className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-[#25D366] hover:text-[#1ebe57] transition-colors cursor-pointer"
                   >
                     <MessageCircle className="h-3 w-3" />
                     Enquire on WhatsApp
