@@ -110,7 +110,7 @@ const Index = () => {
               </span>
             </h1>
 
-            <p className="text-primary-foreground/85 text-base md:text-lg mb-3 leading-relaxed max-w-xl font-light">
+            <p className="text-primary-foreground/95 text-base md:text-lg mb-3 leading-relaxed max-w-xl font-light drop-shadow-sm">
               Hand-finished African couture, bespoke bags and signature chitenge
               — measured, cut and sewn with the quiet patience of a craft.
             </p>
