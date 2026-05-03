@@ -14,6 +14,16 @@ import heroBg from '@/assets/hero-bg.jpg';
 
 const PHONE_NUMBERS = ['+260979287496', '+260978097202'];
 
+const WHATSAPP_NUMBER = '260979287496';
+const buildWaUrl = (message?: string) =>
+  `https://wa.me/${WHATSAPP_NUMBER}${message ? `?text=${encodeURIComponent(message)}` : ''}`;
+const openWhatsApp = (e: React.MouseEvent, url: string) => {
+  e.preventDefault();
+  e.stopPropagation();
+  const win = window.open(url, '_blank', 'noopener,noreferrer');
+  if (!win) window.location.href = url;
+};
+
 const services = [
   { icon: '👗', title: 'Chitenge Wear', desc: 'Beautiful African prints for men & women' },
   { icon: '🎒', title: 'Bags', desc: 'Backpacks, laptop bags, clutch purses, school bags & more' },
