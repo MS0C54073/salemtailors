@@ -145,7 +145,7 @@ const Index = () => {
 
             {/* Quick WhatsApp service chips */}
             <div className="mt-6">
-              <p className="text-[11px] uppercase tracking-[0.25em] text-primary-foreground/60 mb-2">
+              <p className="text-[11px] uppercase tracking-[0.25em] text-primary-foreground/80 mb-2">
                 Quick enquiry on WhatsApp
               </p>
               <div className="flex flex-wrap gap-2">
