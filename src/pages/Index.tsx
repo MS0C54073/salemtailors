@@ -189,9 +189,18 @@ const Index = () => {
                   </span>
                   <h3 className="font-serif font-semibold text-foreground text-base mb-1">{s.title}</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
-                  <span className="mt-3 inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                    Discover <ArrowRight className="h-3 w-3" />
-                  </span>
+                  <a
+                    href={`https://wa.me/260979287496?text=${encodeURIComponent(
+                      `Hello Salem Tailors, I'm interested in your ${s.title} service. Could you tell me more?`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-[#25D366] hover:text-[#1ebe57] transition-colors"
+                  >
+                    <MessageCircle className="h-3 w-3" />
+                    Enquire on WhatsApp
+                  </a>
                 </div>
               </motion.div>
             ))}
