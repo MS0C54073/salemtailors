@@ -164,7 +164,7 @@ const Index = () => {
                         const win = window.open(waUrl, '_blank', 'noopener,noreferrer');
                         if (!win) window.location.href = waUrl;
                       }}
-                      className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-medium bg-primary-foreground/10 hover:bg-[#25D366] hover:text-white text-primary-foreground border border-primary-foreground/20 hover:border-[#25D366] backdrop-blur-sm transition-all cursor-pointer whitespace-nowrap"
+                      className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-medium bg-primary-foreground/15 hover:bg-[#25D366] hover:text-white text-primary-foreground border border-primary-foreground/30 hover:border-[#25D366] backdrop-blur-sm transition-all cursor-pointer whitespace-nowrap"
                     >
                       <MessageCircle className="h-3 w-3" />
                       {s.title}
