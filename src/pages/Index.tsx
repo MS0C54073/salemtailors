@@ -119,7 +119,7 @@ const Index = () => {
               {[...Array(5)].map((_, i) => (
                 <Star key={i} className="h-3.5 w-3.5 fill-gold text-gold" />
               ))}
-              <span className="text-xs text-primary-foreground/70 ml-2 tracking-wide">
+              <span className="text-xs text-primary-foreground/85 ml-2 tracking-wide drop-shadow-sm">
                 Trusted across Lusaka since day one
               </span>
             </div>
