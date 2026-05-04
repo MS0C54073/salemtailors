@@ -96,21 +96,21 @@ const Index = () => {
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             className="max-w-2xl"
           >
-            <div className="flex items-center gap-2 mb-5">
-              <span className="h-px w-10 bg-gold/70" />
-              <span className="text-[11px] uppercase tracking-[0.3em] text-gold-light font-medium">
+            <div className="flex items-center gap-2 mb-4 sm:mb-5">
+              <span className="h-px w-8 sm:w-10 bg-gold/70" />
+              <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.25em] sm:tracking-[0.3em] text-gold-light font-medium break-words">
                 Atelier · Lusaka · Est. Salem Tailors
               </span>
             </div>
 
-            <h1 className="font-serif text-5xl md:text-7xl font-semibold leading-[1.02] mb-5 text-primary-foreground">
+            <h1 className="font-serif text-[2.25rem] xs:text-5xl sm:text-5xl md:text-7xl font-semibold leading-[1.05] md:leading-[1.02] mb-4 sm:mb-5 text-primary-foreground break-words hyphens-auto">
               Crafting your
               <span className="block italic font-normal text-gradient-warm animate-shimmer bg-[linear-gradient(90deg,hsl(var(--gold-light)),hsl(var(--gold)),hsl(var(--terracotta)),hsl(var(--gold)),hsl(var(--gold-light)))]">
                 perfect silhouette
               </span>
             </h1>
 
-            <p className="text-primary-foreground/95 text-base md:text-lg mb-3 leading-relaxed max-w-xl font-light drop-shadow-sm">
+            <p className="text-primary-foreground/95 text-sm sm:text-base md:text-lg mb-3 leading-relaxed max-w-xl font-light drop-shadow-sm">
               Hand-finished African couture, bespoke bags and signature chitenge
               — measured, cut and sewn with the quiet patience of a craft.
             </p>
@@ -145,7 +145,7 @@ const Index = () => {
 
             {/* Quick WhatsApp service chips */}
             <div className="mt-6">
-              <p className="text-[11px] uppercase tracking-[0.25em] text-primary-foreground/80 mb-2">
+              <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] sm:tracking-[0.25em] text-primary-foreground/80 mb-2">
                 Quick enquiry on WhatsApp
               </p>
               <div className="flex flex-wrap gap-2">
@@ -164,7 +164,7 @@ const Index = () => {
                         const win = window.open(waUrl, '_blank', 'noopener,noreferrer');
                         if (!win) window.location.href = waUrl;
                       }}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-primary-foreground/10 hover:bg-[#25D366] hover:text-white text-primary-foreground border border-primary-foreground/20 hover:border-[#25D366] backdrop-blur-sm transition-all cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-medium bg-primary-foreground/10 hover:bg-[#25D366] hover:text-white text-primary-foreground border border-primary-foreground/20 hover:border-[#25D366] backdrop-blur-sm transition-all cursor-pointer whitespace-nowrap"
                     >
                       <MessageCircle className="h-3 w-3" />
                       {s.title}
@@ -225,16 +225,16 @@ const Index = () => {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.07, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                 whileHover={{ y: -4 }}
-                className="group relative bg-card rounded-xl p-5 border border-border hover:border-primary/40 hover:shadow-elegant transition-all overflow-hidden"
+                className="group relative bg-card rounded-xl p-3.5 sm:p-5 border border-border hover:border-primary/40 hover:shadow-elegant transition-all overflow-hidden"
               >
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-gradient-to-br from-gold/10 to-terracotta/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="relative">
-                  <span className="text-3xl mb-3 block transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3 origin-bottom-left">
+                  <span className="text-2xl sm:text-3xl mb-2 sm:mb-3 block transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3 origin-bottom-left">
                     {s.icon}
                   </span>
-                  <h3 className="font-serif font-semibold text-foreground text-base mb-1">{s.title}</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
+                  <h3 className="font-serif font-semibold text-foreground text-sm sm:text-base mb-1 leading-tight break-words">{s.title}</h3>
+                  <p className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
                   <a
                     href={buildWaUrl(`Hello Salem Tailors, I'm interested in your ${s.title} service. Could you tell me more?`)}
                     target="_blank"
