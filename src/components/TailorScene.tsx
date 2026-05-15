@@ -617,7 +617,7 @@ const TailorScene = () => {
               transition={{ duration: 0.6, ease: 'easeInOut' }}
               className="absolute inset-0"
             >
-              <ProcessScene stage={stage} />
+              <ProcessScene stage={stage} stageDurationMs={STAGE_DURATION_MS} />
             </motion.div>
           </AnimatePresence>
         </div>
