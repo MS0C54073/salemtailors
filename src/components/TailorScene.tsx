@@ -440,20 +440,19 @@ const stepIconByPattern: Record<Pattern, React.ComponentType<{ className?: strin
   measure: Ruler,
 };
 
-const STEP_DURATION_MS = 1400;
-
-const ProcessScene = ({ stage }: { stage: Stage }) => {
+const ProcessScene = ({ stage, stageDurationMs }: { stage: Stage; stageDurationMs: number }) => {
   const Scene = ProcessByPattern[stage.pattern];
   const StepIcon = stepIconByPattern[stage.pattern];
   const [stepIdx, setStepIdx] = useState(0);
+  const stepDuration = Math.floor(stageDurationMs / stage.steps.length);
 
   useEffect(() => {
     setStepIdx(0);
     const t = setInterval(() => {
-      setStepIdx(p => (p + 1) % stage.steps.length);
-    }, STEP_DURATION_MS);
+      setStepIdx(p => (p < stage.steps.length - 1 ? p + 1 : p));
+    }, stepDuration);
     return () => clearInterval(t);
-  }, [stage.id, stage.steps.length]);
+  }, [stage.id, stage.steps.length, stepDuration]);
 
   return (
     <div className={`relative w-full h-full bg-gradient-to-br ${stage.processGradient} overflow-hidden`}>
