@@ -440,20 +440,19 @@ const stepIconByPattern: Record<Pattern, React.ComponentType<{ className?: strin
   measure: Ruler,
 };
 
-const STEP_DURATION_MS = 1400;
-
-const ProcessScene = ({ stage }: { stage: Stage }) => {
+const ProcessScene = ({ stage, stageDurationMs }: { stage: Stage; stageDurationMs: number }) => {
   const Scene = ProcessByPattern[stage.pattern];
   const StepIcon = stepIconByPattern[stage.pattern];
   const [stepIdx, setStepIdx] = useState(0);
+  const stepDuration = Math.floor(stageDurationMs / stage.steps.length);
 
   useEffect(() => {
     setStepIdx(0);
     const t = setInterval(() => {
-      setStepIdx(p => (p + 1) % stage.steps.length);
-    }, STEP_DURATION_MS);
+      setStepIdx(p => (p < stage.steps.length - 1 ? p + 1 : p));
+    }, stepDuration);
     return () => clearInterval(t);
-  }, [stage.id, stage.steps.length]);
+  }, [stage.id, stage.steps.length, stepDuration]);
 
   return (
     <div className={`relative w-full h-full bg-gradient-to-br ${stage.processGradient} overflow-hidden`}>
@@ -470,40 +469,57 @@ const ProcessScene = ({ stage }: { stage: Stage }) => {
       {/* Animated workbench scene */}
       <Scene />
 
-      {/* Bottom overlay: label + animated step */}
-      <div className="absolute inset-x-0 bottom-0 z-10 px-5 pb-4 pt-10 bg-gradient-to-t from-black/40 via-black/15 to-transparent text-primary-foreground">
+      {/* Bottom overlay: label + step checklist synced to the animation */}
+      <div className="absolute inset-x-0 bottom-0 z-10 px-5 pb-4 pt-10 bg-gradient-to-t from-black/50 via-black/20 to-transparent text-primary-foreground">
         <span className="block text-[10px] uppercase tracking-[0.22em] text-primary-foreground/85 mb-1">
           Process
         </span>
-        <p className="font-serif text-base md:text-lg leading-tight text-primary-foreground drop-shadow-sm">
+        <p className="font-serif text-base md:text-lg leading-tight text-primary-foreground drop-shadow-sm flex items-center gap-2">
+          <StepIcon className="h-4 w-4 text-primary-foreground/90 shrink-0" />
           {stage.processLabel}
         </p>
-        <div className="mt-2 flex items-center gap-2 min-h-[22px]">
-          <StepIcon className="h-4 w-4 text-primary-foreground/90 shrink-0" />
-          <AnimatePresence mode="wait">
-            <motion.span
-              key={`${stage.id}-${stepIdx}`}
-              initial={{ y: 6, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -6, opacity: 0 }}
-              transition={{ duration: 0.35 }}
-              className="text-xs md:text-sm text-primary-foreground/95"
-            >
-              {stage.steps[stepIdx]}
-            </motion.span>
-          </AnimatePresence>
-        </div>
-        {/* Step progress dots */}
-        <div className="mt-2 flex gap-1.5">
-          {stage.steps.map((_, i) => (
-            <span
-              key={i}
-              className={`h-1 rounded-full transition-all duration-300 ${
-                i === stepIdx ? 'w-6 bg-primary-foreground' : 'w-3 bg-primary-foreground/40'
-              }`}
-            />
-          ))}
-        </div>
+        <ul className="mt-2.5 space-y-1" aria-label="Current process steps">
+          {stage.steps.map((step, i) => {
+            const isActive = i === stepIdx;
+            const isDone = i < stepIdx;
+            return (
+              <li
+                key={`${stage.id}-${i}`}
+                className={`flex items-center gap-2 text-[11px] md:text-xs transition-all duration-300 ${
+                  isActive
+                    ? 'text-primary-foreground font-medium'
+                    : isDone
+                      ? 'text-primary-foreground/70 line-through decoration-primary-foreground/40'
+                      : 'text-primary-foreground/50'
+                }`}
+              >
+                <span
+                  className={`relative inline-flex items-center justify-center h-3.5 w-3.5 rounded-full border transition-all ${
+                    isActive
+                      ? 'border-primary-foreground bg-primary-foreground/20'
+                      : isDone
+                        ? 'border-primary-foreground/70 bg-primary-foreground/70'
+                        : 'border-primary-foreground/40 bg-transparent'
+                  }`}
+                >
+                  {isActive && (
+                    <motion.span
+                      className="absolute inset-0 rounded-full ring-2 ring-primary-foreground/60"
+                      animate={{ scale: [1, 1.35, 1], opacity: [0.8, 0.2, 0.8] }}
+                      transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+                    />
+                  )}
+                  {isDone && (
+                    <svg viewBox="0 0 12 12" className="h-2 w-2 text-background" aria-hidden>
+                      <path d="M2 6 L5 9 L10 3" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </span>
+                <span className="truncate">{step}</span>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </div>
   );
@@ -601,7 +617,7 @@ const TailorScene = () => {
               transition={{ duration: 0.6, ease: 'easeInOut' }}
               className="absolute inset-0"
             >
-              <ProcessScene stage={stage} />
+              <ProcessScene stage={stage} stageDurationMs={STAGE_DURATION_MS} />
             </motion.div>
           </AnimatePresence>
         </div>
