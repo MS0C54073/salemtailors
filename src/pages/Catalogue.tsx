@@ -66,6 +66,11 @@ const Catalogue = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title="Shop the Catalogue — Salem Tailors"
+        description="Browse handcrafted bags, caps, fabrics and ready-to-wear by Salem Tailors. Shop chitenge prints and bespoke pieces made in Lusaka."
+        path="/catalogue"
+      />
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="container flex items-center justify-between h-14 px-4">
           <Link to="/" className="flex items-center gap-2">
