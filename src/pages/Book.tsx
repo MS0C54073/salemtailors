@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import Seo from '@/components/Seo';
 
 const APPOINTMENT_TYPES = [
   { value: 'consultation', label: 'Consultation' },
@@ -177,6 +178,12 @@ const Book = () => {
   };
 
   return (
+    <>
+      <Seo
+        title="Book an Appointment — Salem Tailors"
+        description="Book a consultation, measurement, fitting or pickup with Salem Tailors in Lusaka. Pick a date and we'll confirm via WhatsApp."
+        path="/book"
+      />
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 bg-background/85 backdrop-blur-md border-b border-border">
         <div className="container flex items-center justify-between h-14 px-4">
@@ -276,6 +283,7 @@ const Book = () => {
         </Card>
       </main>
     </div>
+    </>
   );
 };
 
