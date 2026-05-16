@@ -11,6 +11,32 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import heroBg from '@/assets/hero-bg.jpg';
+import Seo from '@/components/Seo';
+
+const HOME_JSONLD = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: 'Salem Tailors',
+    description: 'Bespoke African tailoring, chitenge wear, bags, caps and alterations in Lusaka.',
+    url: 'https://salemtailors.lovable.app/',
+    telephone: '+260979287496',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: 'Katungu Market',
+      addressLocality: 'Lusaka',
+      addressCountry: 'ZM',
+    },
+    areaServed: 'Lusaka',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    serviceType: 'Bespoke tailoring and alterations',
+    provider: { '@type': 'LocalBusiness', name: 'Salem Tailors' },
+    areaServed: 'Lusaka',
+  },
+];
 
 const PHONE_NUMBERS = ['+260979287496', '+260978097202'];
 
