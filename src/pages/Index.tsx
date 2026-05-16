@@ -77,6 +77,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title="Salem Tailors — Bespoke African Tailoring in Lusaka"
+        description="Salem Tailors crafts chitenge wear, bespoke suits, bags, caps and alterations in Lusaka. Book a fitting or shop the catalogue online."
+        path="/"
+        jsonLd={HOME_JSONLD}
+      />
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="container flex items-center justify-between h-14 px-4">
