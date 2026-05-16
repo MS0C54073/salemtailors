@@ -1,0 +1,11 @@
+# Salem Tailors
+
+> Bespoke African tailoring in Lusaka — chitenge wear, suits, bags, caps and alterations. Book a fitting or shop the catalogue online.
+
+Salem Tailors is a Lusaka-based atelier handcrafting custom garments and bags. Customers can book appointments (consultation, measurement, fitting, pickup), browse a catalogue of ready-to-wear and accessories, and chat with the shop on WhatsApp.
+
+## Pages
+
+- [Home](/): Services, story, contact, and how to book.
+- [Catalogue](/catalogue): Bags, caps, fabrics and ready-to-wear by Salem Tailors.
+- [Book an appointment](/book): Schedule a consultation, measurement, fitting or pickup.
