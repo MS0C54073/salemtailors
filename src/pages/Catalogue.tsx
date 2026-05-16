@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
+import Seo from '@/components/Seo';
 
 type Item = {
   id: string;
