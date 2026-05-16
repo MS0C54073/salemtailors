@@ -106,6 +106,30 @@ const CatalogueItem = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title={`${item.name} — Salem Tailors`}
+        description={(item.description || `${item.name} handcrafted by Salem Tailors in Lusaka.`).slice(0, 160)}
+        path={`/catalogue/${item.slug}`}
+        type="product"
+        image={item.primary_image_url || activeImg || undefined}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: item.name,
+          description: item.description || undefined,
+          image: item.primary_image_url || undefined,
+          brand: { '@type': 'Brand', name: 'Salem Tailors' },
+          offers: item.base_price ? {
+            '@type': 'Offer',
+            price: Number(item.base_price),
+            priceCurrency: item.currency || 'ZMW',
+            availability: item.stock_status === 'out_of_stock'
+              ? 'https://schema.org/OutOfStock'
+              : 'https://schema.org/InStock',
+            url: `https://salemtailors.lovable.app/catalogue/${item.slug}`,
+          } : undefined,
+        }}
+      />
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="container flex items-center justify-between h-14 px-4">
           <Link to="/catalogue" className="flex items-center gap-2">
