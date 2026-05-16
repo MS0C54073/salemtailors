@@ -12,6 +12,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import Seo from '@/components/Seo';
 
 const ADMIN_WHATSAPP = '260979287496';
 
