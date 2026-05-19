@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import Seo from '@/components/Seo';
+import { CartButton } from '@/components/CartDrawer';
 
 type Item = {
   id: string;
@@ -78,7 +79,10 @@ const Catalogue = () => {
             <Scissors className="h-5 w-5 text-primary" />
             <span className="font-serif text-lg font-bold text-foreground">Salem Tailors</span>
           </Link>
-          <Link to="/book"><Button size="sm">Book</Button></Link>
+          <div className="flex items-center gap-2">
+            <CartButton />
+            <Link to="/book"><Button size="sm">Book</Button></Link>
+          </div>
         </div>
       </header>
 

@@ -13,6 +13,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import Seo from '@/components/Seo';
+import { CartButton } from '@/components/CartDrawer';
+import { useCart } from '@/contexts/CartContext';
 
 const ADMIN_WHATSAPP = '260979287496';
 
