@@ -25,6 +25,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const staffLinks = [
     { to: '/dashboard/admin', icon: LayoutDashboard, label: 'Home' },
     { to: '/dashboard/admin/orders', icon: ShoppingBag, label: 'Orders' },
+    { to: '/dashboard/admin/shop-orders', icon: ShoppingBag, label: 'Shop Orders' },
     { to: '/dashboard/admin/catalogue', icon: Package, label: 'Catalogue' },
     { to: '/dashboard/admin/appointments', icon: Calendar, label: 'Calendar' },
     { to: '/dashboard/admin/customers', icon: UserCircle, label: 'Customers' },

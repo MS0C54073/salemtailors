@@ -13,6 +13,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import Seo from '@/components/Seo';
+import { CartButton } from '@/components/CartDrawer';
+import { useCart } from '@/contexts/CartContext';
 
 const ADMIN_WHATSAPP = '260979287496';
 
@@ -23,6 +25,7 @@ const CatalogueItem = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { add: addToCart } = useCart();
   const [item, setItem] = useState<any>(null);
   const [images, setImages] = useState<any[]>([]);
   const [variants, setVariants] = useState<any[]>([]);
@@ -137,6 +140,7 @@ const CatalogueItem = () => {
             <Scissors className="h-5 w-5 text-primary" />
             <span className="font-serif text-lg font-bold text-foreground">Catalogue</span>
           </Link>
+          <CartButton />
         </div>
       </header>
 
@@ -215,12 +219,33 @@ const CatalogueItem = () => {
             <div className="flex flex-col sm:flex-row gap-2 pt-2">
               <Button
                 size="lg"
-                onClick={() => setInquiryOpen(true)}
-                disabled={item.status === 'sold_out'}
+                disabled={item.status === 'sold_out' || item.stock_status === 'out_of_stock' || (variant && variant.stock_status === 'out_of_stock')}
+                onClick={() => {
+                  addToCart({
+                    id: variant ? `${item.id}:${variant.id}` : item.id,
+                    itemId: item.id,
+                    variantId: variant?.id || null,
+                    slug: item.slug,
+                    name: item.name,
+                    variantName: variant?.name || null,
+                    price: price != null ? Number(price) : null,
+                    currency: item.currency || 'ZMW',
+                    image: item.primary_image_url || activeImg || null,
+                  });
+                  toast.success('Added to cart');
+                }}
                 className="gap-2 w-full sm:w-auto"
               >
                 <ShoppingBag className="h-4 w-4" />
-                {item.status === 'sold_out' ? 'Sold out' : 'Request this item'}
+                {item.status === 'sold_out' ? 'Sold out' : 'Add to cart'}
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => setInquiryOpen(true)}
+                className="gap-2 w-full sm:w-auto"
+              >
+                Request custom
               </Button>
               <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
                 <Button size="lg" variant="outline" className="gap-2 w-full sm:w-auto bg-[#25D366]/10 border-[#25D366]/30 hover:bg-[#25D366]/20">

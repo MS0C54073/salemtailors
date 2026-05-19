@@ -650,6 +650,54 @@ export type Database = {
         }
         Relationships: []
       }
+      shop_orders: {
+        Row: {
+          created_at: string
+          currency: string
+          customer_email: string | null
+          customer_name: string
+          customer_phone: string
+          id: string
+          items: Json
+          notes: string | null
+          status: Database["public"]["Enums"]["shop_order_status"]
+          subtotal: number
+          updated_at: string
+          user_id: string | null
+          whatsapp_sent: boolean
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          customer_email?: string | null
+          customer_name: string
+          customer_phone: string
+          id?: string
+          items?: Json
+          notes?: string | null
+          status?: Database["public"]["Enums"]["shop_order_status"]
+          subtotal?: number
+          updated_at?: string
+          user_id?: string | null
+          whatsapp_sent?: boolean
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          customer_email?: string | null
+          customer_name?: string
+          customer_phone?: string
+          id?: string
+          items?: Json
+          notes?: string | null
+          status?: Database["public"]["Enums"]["shop_order_status"]
+          subtotal?: number
+          updated_at?: string
+          user_id?: string | null
+          whatsapp_sent?: boolean
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -727,6 +775,12 @@ export type Database = {
         | "ready_for_pickup"
       payment_status: "not_paid" | "deposit_paid" | "fully_paid"
       payment_type: "deposit" | "balance" | "full" | "refund"
+      shop_order_status:
+        | "new"
+        | "contacted"
+        | "confirmed"
+        | "fulfilled"
+        | "cancelled"
       stock_status: "in_stock" | "low_stock" | "out_of_stock"
     }
     CompositeTypes: {
@@ -899,6 +953,13 @@ export const Constants = {
       ],
       payment_status: ["not_paid", "deposit_paid", "fully_paid"],
       payment_type: ["deposit", "balance", "full", "refund"],
+      shop_order_status: [
+        "new",
+        "contacted",
+        "confirmed",
+        "fulfilled",
+        "cancelled",
+      ],
       stock_status: ["in_stock", "low_stock", "out_of_stock"],
     },
   },
