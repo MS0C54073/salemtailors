@@ -25,6 +25,7 @@ const CatalogueItem = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { add: addToCart } = useCart();
   const [item, setItem] = useState<any>(null);
   const [images, setImages] = useState<any[]>([]);
   const [variants, setVariants] = useState<any[]>([]);
