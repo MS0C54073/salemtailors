@@ -29,8 +29,11 @@ import AdminFinance from "./pages/dashboard/AdminFinance";
 import AdminPortfolio from "./pages/dashboard/AdminPortfolio";
 import AdminSlots from "./pages/dashboard/AdminSlots";
 import AdminCatalogue from "./pages/dashboard/AdminCatalogue";
+import AdminShopOrders from "./pages/dashboard/AdminShopOrders";
 import Catalogue from "./pages/Catalogue";
 import CatalogueItem from "./pages/CatalogueItem";
+import { CartProvider } from "./contexts/CartContext";
+import CartDrawer from "./components/CartDrawer";
 
 const queryClient = new QueryClient();
 
@@ -42,39 +45,43 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/book" element={<Book />} />
-            <Route path="/catalogue" element={<Catalogue />} />
-            <Route path="/catalogue/:slug" element={<CatalogueItem />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/admin" element={<AdminLogin />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
+          <CartProvider>
+            <CartDrawer />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/book" element={<Book />} />
+              <Route path="/catalogue" element={<Catalogue />} />
+              <Route path="/catalogue/:slug" element={<CatalogueItem />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/admin" element={<AdminLogin />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
-            {/* Client Routes */}
-            <Route path="/dashboard/client" element={<ProtectedRoute allowedRoles={['client']}><ClientDashboard /></ProtectedRoute>} />
-            <Route path="/dashboard/client/orders" element={<ProtectedRoute allowedRoles={['client']}><ClientOrders /></ProtectedRoute>} />
-            <Route path="/dashboard/client/new-request" element={<ProtectedRoute allowedRoles={['client']}><NewGarmentRequest /></ProtectedRoute>} />
-            <Route path="/dashboard/client/appointments" element={<ProtectedRoute allowedRoles={['client']}><ClientAppointments /></ProtectedRoute>} />
-            <Route path="/dashboard/client/messages" element={<ProtectedRoute allowedRoles={['client']}><Messages /></ProtectedRoute>} />
-            <Route path="/dashboard/client/profile" element={<ProtectedRoute allowedRoles={['client']}><ClientProfile /></ProtectedRoute>} />
+              {/* Client Routes */}
+              <Route path="/dashboard/client" element={<ProtectedRoute allowedRoles={['client']}><ClientDashboard /></ProtectedRoute>} />
+              <Route path="/dashboard/client/orders" element={<ProtectedRoute allowedRoles={['client']}><ClientOrders /></ProtectedRoute>} />
+              <Route path="/dashboard/client/new-request" element={<ProtectedRoute allowedRoles={['client']}><NewGarmentRequest /></ProtectedRoute>} />
+              <Route path="/dashboard/client/appointments" element={<ProtectedRoute allowedRoles={['client']}><ClientAppointments /></ProtectedRoute>} />
+              <Route path="/dashboard/client/messages" element={<ProtectedRoute allowedRoles={['client']}><Messages /></ProtectedRoute>} />
+              <Route path="/dashboard/client/profile" element={<ProtectedRoute allowedRoles={['client']}><ClientProfile /></ProtectedRoute>} />
 
-            {/* Admin/Staff Routes */}
-            <Route path="/dashboard/admin" element={<ProtectedRoute allowedRoles={['super_admin', 'admin', 'sub_admin']}><AdminDashboard /></ProtectedRoute>} />
-            <Route path="/dashboard/admin/orders" element={<ProtectedRoute allowedRoles={['super_admin', 'admin', 'sub_admin']}><AdminOrders /></ProtectedRoute>} />
-            <Route path="/dashboard/admin/appointments" element={<ProtectedRoute allowedRoles={['super_admin', 'admin']}><AdminAppointments /></ProtectedRoute>} />
-            <Route path="/dashboard/admin/slots" element={<ProtectedRoute allowedRoles={['super_admin', 'admin']}><AdminSlots /></ProtectedRoute>} />
-            <Route path="/dashboard/admin/customers" element={<ProtectedRoute allowedRoles={['super_admin', 'admin', 'sub_admin']}><AdminCustomers /></ProtectedRoute>} />
-            <Route path="/dashboard/admin/finance" element={<ProtectedRoute allowedRoles={['super_admin', 'admin']}><AdminFinance /></ProtectedRoute>} />
-            <Route path="/dashboard/admin/portfolio" element={<ProtectedRoute allowedRoles={['super_admin', 'admin', 'sub_admin']}><AdminPortfolio /></ProtectedRoute>} />
-            <Route path="/dashboard/admin/catalogue" element={<ProtectedRoute allowedRoles={['super_admin', 'admin', 'sub_admin']}><AdminCatalogue /></ProtectedRoute>} />
-            <Route path="/dashboard/admin/messages" element={<ProtectedRoute allowedRoles={['super_admin', 'admin']}><Messages /></ProtectedRoute>} />
-            <Route path="/dashboard/admin/staff" element={<ProtectedRoute allowedRoles={['super_admin']}><StaffManagement /></ProtectedRoute>} />
-            <Route path="/dashboard/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              {/* Admin/Staff Routes */}
+              <Route path="/dashboard/admin" element={<ProtectedRoute allowedRoles={['super_admin', 'admin', 'sub_admin']}><AdminDashboard /></ProtectedRoute>} />
+              <Route path="/dashboard/admin/orders" element={<ProtectedRoute allowedRoles={['super_admin', 'admin', 'sub_admin']}><AdminOrders /></ProtectedRoute>} />
+              <Route path="/dashboard/admin/shop-orders" element={<ProtectedRoute allowedRoles={['super_admin', 'admin', 'sub_admin']}><AdminShopOrders /></ProtectedRoute>} />
+              <Route path="/dashboard/admin/appointments" element={<ProtectedRoute allowedRoles={['super_admin', 'admin']}><AdminAppointments /></ProtectedRoute>} />
+              <Route path="/dashboard/admin/slots" element={<ProtectedRoute allowedRoles={['super_admin', 'admin']}><AdminSlots /></ProtectedRoute>} />
+              <Route path="/dashboard/admin/customers" element={<ProtectedRoute allowedRoles={['super_admin', 'admin', 'sub_admin']}><AdminCustomers /></ProtectedRoute>} />
+              <Route path="/dashboard/admin/finance" element={<ProtectedRoute allowedRoles={['super_admin', 'admin']}><AdminFinance /></ProtectedRoute>} />
+              <Route path="/dashboard/admin/portfolio" element={<ProtectedRoute allowedRoles={['super_admin', 'admin', 'sub_admin']}><AdminPortfolio /></ProtectedRoute>} />
+              <Route path="/dashboard/admin/catalogue" element={<ProtectedRoute allowedRoles={['super_admin', 'admin', 'sub_admin']}><AdminCatalogue /></ProtectedRoute>} />
+              <Route path="/dashboard/admin/messages" element={<ProtectedRoute allowedRoles={['super_admin', 'admin']}><Messages /></ProtectedRoute>} />
+              <Route path="/dashboard/admin/staff" element={<ProtectedRoute allowedRoles={['super_admin']}><StaffManagement /></ProtectedRoute>} />
+              <Route path="/dashboard/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
 
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </CartProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
