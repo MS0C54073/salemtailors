@@ -140,6 +140,7 @@ const CatalogueItem = () => {
             <Scissors className="h-5 w-5 text-primary" />
             <span className="font-serif text-lg font-bold text-foreground">Catalogue</span>
           </Link>
+          <CartButton />
         </div>
       </header>
 
