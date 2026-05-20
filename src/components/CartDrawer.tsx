@@ -186,8 +186,12 @@ export default function CartDrawer() {
               Send order via WhatsApp
             </Button>
             <p className="text-[10px] text-muted-foreground text-center">
-              Your order is saved and forwarded to our team on WhatsApp for confirmation.
+              Your order is saved and forwarded to our team on WhatsApp for confirmation.{' '}
+              <Link to="/track" onClick={() => setOpen(false)} className="underline hover:text-foreground">
+                Track an existing order
+              </Link>
             </p>
+
           </div>
         )}
       </SheetContent>
