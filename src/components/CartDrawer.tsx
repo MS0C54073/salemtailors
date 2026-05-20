@@ -86,22 +86,30 @@ export default function CartDrawer() {
         subtotal,
         currency,
         user_id: user?.id || null,
-        whatsapp_sent: true,
+        whatsapp_sent: false,
       })
       .select('id')
       .single();
-    setSending(false);
-    if (error) {
+    if (error || !data) {
+      setSending(false);
       console.error(error);
       return toast.error('Could not save order. Please try again.');
     }
-    const msg = buildWhatsappMessage(data?.id);
+    const msg = buildWhatsappMessage(data.id);
     const url = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(msg)}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
-    toast.success('Order saved! Continuing on WhatsApp.');
+    const opened = window.open(url, '_blank', 'noopener,noreferrer');
+    // Only mark as sent if the WhatsApp link actually opened
+    if (opened) {
+      await supabase.from('shop_orders').update({ whatsapp_sent: true }).eq('id', data.id);
+      toast.success('Order saved! Continuing on WhatsApp.');
+    } else {
+      toast.warning('Order saved, but WhatsApp could not open. Please retry from your orders.');
+    }
+    setSending(false);
     clear();
     setForm({ customer_name: '', customer_phone: '', customer_email: '', notes: '' });
     setOpen(false);
+
   };
 
   return (
