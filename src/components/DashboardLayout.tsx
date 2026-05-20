@@ -5,6 +5,7 @@ import { Scissors, LayoutDashboard, ShoppingBag, Calendar, MessageCircle, Users,
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useShopOrderAlerts } from '@/hooks/useShopOrderAlerts';
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const [moreOpen, setMoreOpen] = useState(false);
@@ -12,6 +13,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const isStaff = role === 'super_admin' || role === 'admin' || role === 'sub_admin';
+  const { unread: unreadShopOrders } = useShopOrderAlerts(isStaff);
 
   const clientLinks = [
     { to: '/dashboard/client', icon: LayoutDashboard, label: 'Dashboard' },
@@ -77,15 +79,23 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
       <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border px-2 py-1 flex justify-around z-40">
         {links.slice(0, 4).map(link => {
           const active = location.pathname === link.to;
+          const badge = link.to === '/dashboard/admin/shop-orders' && unreadShopOrders > 0 ? unreadShopOrders : 0;
           return (
             <Link
               key={link.to}
               to={link.to}
-              className={`flex flex-col items-center py-1.5 px-2 rounded-md transition-colors ${
+              className={`relative flex flex-col items-center py-1.5 px-2 rounded-md transition-colors ${
                 active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <link.icon className="h-5 w-5" />
+              <div className="relative">
+                <link.icon className="h-5 w-5" />
+                {badge > 0 && (
+                  <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
+                    {badge > 9 ? '9+' : badge}
+                  </span>
+                )}
+              </div>
               <span className="text-[10px] mt-0.5 font-medium">{link.label}</span>
             </Link>
           );
@@ -93,8 +103,13 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
         {links.length > 4 && (
           <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
             <SheetTrigger asChild>
-              <button className="flex flex-col items-center py-1.5 px-2 rounded-md text-muted-foreground hover:text-foreground transition-colors">
+              <button className="relative flex flex-col items-center py-1.5 px-2 rounded-md text-muted-foreground hover:text-foreground transition-colors">
                 <MoreHorizontal className="h-5 w-5" />
+                {isStaff && unreadShopOrders > 0 && !links.slice(0, 4).some(l => l.to === '/dashboard/admin/shop-orders') && (
+                  <span className="absolute top-0 right-1 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
+                    {unreadShopOrders > 9 ? '9+' : unreadShopOrders}
+                  </span>
+                )}
                 <span className="text-[10px] mt-0.5 font-medium">More</span>
               </button>
             </SheetTrigger>
@@ -103,17 +118,23 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
               <div className="grid grid-cols-3 gap-2 mt-4 pb-4">
                 {links.slice(4).map(link => {
                   const active = location.pathname === link.to;
+                  const badge = link.to === '/dashboard/admin/shop-orders' && unreadShopOrders > 0 ? unreadShopOrders : 0;
                   return (
                     <Link
                       key={link.to}
                       to={link.to}
                       onClick={() => setMoreOpen(false)}
-                      className={`flex flex-col items-center justify-center gap-1 p-4 rounded-lg border ${
+                      className={`relative flex flex-col items-center justify-center gap-1 p-4 rounded-lg border ${
                         active ? 'border-primary bg-primary/5 text-primary' : 'border-border hover:border-primary/50'
                       }`}
                     >
                       <link.icon className="h-5 w-5" />
                       <span className="text-xs font-medium">{link.label}</span>
+                      {badge > 0 && (
+                        <span className="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+                          {badge > 9 ? '9+' : badge}
+                        </span>
+                      )}
                     </Link>
                   );
                 })}
