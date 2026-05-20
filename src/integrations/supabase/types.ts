@@ -733,6 +733,20 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      track_shop_orders: {
+        Args: { _phone: string }
+        Returns: {
+          created_at: string
+          currency: string
+          customer_name: string
+          id: string
+          items: Json
+          status: Database["public"]["Enums"]["shop_order_status"]
+          subtotal: number
+          updated_at: string
+          whatsapp_sent: boolean
+        }[]
+      }
     }
     Enums: {
       app_role: "super_admin" | "admin" | "sub_admin" | "client"
