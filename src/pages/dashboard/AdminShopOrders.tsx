@@ -5,9 +5,10 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ShoppingBag, Phone, Mail, MessageCircle, Loader2 } from 'lucide-react';
+import { ShoppingBag, Phone, Mail, MessageCircle, Loader2, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
+
 import { useShopOrderAlerts } from '@/hooks/useShopOrderAlerts';
 
 type Order = {
