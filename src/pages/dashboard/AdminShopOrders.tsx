@@ -22,6 +22,8 @@ type Order = {
   currency: string;
   status: string;
   created_at: string;
+  whatsapp_sent: boolean;
+
 };
 
 const STATUSES = ['new', 'contacted', 'confirmed', 'fulfilled', 'cancelled'];
