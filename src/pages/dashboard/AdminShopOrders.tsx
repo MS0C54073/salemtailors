@@ -181,7 +181,18 @@ const AdminShopOrders = () => {
                         {STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                       </SelectContent>
                     </Select>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 gap-1.5 text-[#25D366] border-[#25D366]/40 hover:bg-[#25D366]/10"
+                      onClick={() => resendWhatsApp(o)}
+                      title={o.whatsapp_sent ? 'Resend on WhatsApp' : 'Send on WhatsApp'}
+                    >
+                      <Send className="h-3.5 w-3.5" />
+                      {o.whatsapp_sent ? 'Resend' : 'Send'}
+                    </Button>
                   </div>
+
                 </Card>
               );
             })}
