@@ -5,6 +5,7 @@ import { Scissors, LayoutDashboard, ShoppingBag, Calendar, MessageCircle, Users,
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useShopOrderAlerts } from '@/hooks/useShopOrderAlerts';
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const [moreOpen, setMoreOpen] = useState(false);
@@ -12,6 +13,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const isStaff = role === 'super_admin' || role === 'admin' || role === 'sub_admin';
+  const { unread: unreadShopOrders } = useShopOrderAlerts(isStaff);
 
   const clientLinks = [
     { to: '/dashboard/client', icon: LayoutDashboard, label: 'Dashboard' },
