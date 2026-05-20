@@ -68,6 +68,34 @@ const AdminShopOrders = () => {
     load();
   };
 
+  const resendWhatsApp = async (o: Order) => {
+    const lines = [
+      `🛍️ *Order from Salem Tailors shop*`,
+      ``,
+      `*Customer:* ${o.customer_name}`,
+      `*Phone:* ${o.customer_phone}`,
+      o.customer_email ? `*Email:* ${o.customer_email}` : null,
+      ``,
+      `*Items:*`,
+      ...o.items.map((i: any) =>
+        `• ${i.name}${i.variant_name ? ` (${i.variant_name})` : ''} × ${i.qty}` +
+        (i.price ? ` — ${i.currency} ${(Number(i.price) * i.qty).toLocaleString()}` : ' — price on inquiry')
+      ),
+      ``,
+      `*Subtotal:* ${o.currency} ${Number(o.subtotal).toLocaleString()}`,
+      o.notes ? `\n*Notes:* ${o.notes}` : null,
+      `\n_Status: ${o.status} · Ref: ${o.id.slice(0, 8)}_`,
+    ].filter(Boolean).join('\n');
+    const waNumber = o.customer_phone.replace(/[^\d]/g, '');
+    const url = `https://wa.me/${waNumber}?text=${encodeURIComponent(lines)}`;
+    const opened = window.open(url, '_blank', 'noopener,noreferrer');
+    if (!opened) return toast.error('Pop-up blocked. Allow pop-ups and retry.');
+    await supabase.from('shop_orders').update({ whatsapp_sent: true }).eq('id', o.id);
+    toast.success('Opened WhatsApp with order details');
+    load();
+  };
+
+
   return (
     <DashboardLayout>
       <div className="max-w-3xl mx-auto space-y-4">
