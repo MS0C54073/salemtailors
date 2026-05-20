@@ -37,6 +37,7 @@ const AdminShopOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
+  const { markAllSeen } = useShopOrderAlerts(true);
 
   const load = async () => {
     setLoading(true);
@@ -47,6 +48,17 @@ const AdminShopOrders = () => {
   };
 
   useEffect(() => { load(); }, [filter]);
+  useEffect(() => { markAllSeen(); }, [markAllSeen, orders.length]);
+
+  // Live refresh on new/updated orders
+  useEffect(() => {
+    const ch = supabase
+      .channel('shop-orders-page')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_orders' }, () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter]);
 
   const updateStatus = async (id: string, status: string) => {
     const { error } = await supabase.from('shop_orders').update({ status: status as any }).eq('id', id);
