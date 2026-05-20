@@ -32,6 +32,8 @@ import AdminCatalogue from "./pages/dashboard/AdminCatalogue";
 import AdminShopOrders from "./pages/dashboard/AdminShopOrders";
 import Catalogue from "./pages/Catalogue";
 import CatalogueItem from "./pages/CatalogueItem";
+import TrackOrder from "./pages/TrackOrder";
+
 import { CartProvider } from "./contexts/CartContext";
 import CartDrawer from "./components/CartDrawer";
 
