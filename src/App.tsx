@@ -32,6 +32,8 @@ import AdminCatalogue from "./pages/dashboard/AdminCatalogue";
 import AdminShopOrders from "./pages/dashboard/AdminShopOrders";
 import Catalogue from "./pages/Catalogue";
 import CatalogueItem from "./pages/CatalogueItem";
+import TrackOrder from "./pages/TrackOrder";
+
 import { CartProvider } from "./contexts/CartContext";
 import CartDrawer from "./components/CartDrawer";
 
@@ -52,6 +54,8 @@ const App = () => (
               <Route path="/book" element={<Book />} />
               <Route path="/catalogue" element={<Catalogue />} />
               <Route path="/catalogue/:slug" element={<CatalogueItem />} />
+              <Route path="/track" element={<TrackOrder />} />
+
               <Route path="/auth" element={<Auth />} />
               <Route path="/admin" element={<AdminLogin />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />

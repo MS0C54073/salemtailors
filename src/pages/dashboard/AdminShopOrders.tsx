@@ -5,9 +5,10 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ShoppingBag, Phone, Mail, MessageCircle, Loader2 } from 'lucide-react';
+import { ShoppingBag, Phone, Mail, MessageCircle, Loader2, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
+
 import { useShopOrderAlerts } from '@/hooks/useShopOrderAlerts';
 
 type Order = {
@@ -21,6 +22,8 @@ type Order = {
   currency: string;
   status: string;
   created_at: string;
+  whatsapp_sent: boolean;
+
 };
 
 const STATUSES = ['new', 'contacted', 'confirmed', 'fulfilled', 'cancelled'];
@@ -66,6 +69,34 @@ const AdminShopOrders = () => {
     toast.success('Status updated');
     load();
   };
+
+  const resendWhatsApp = async (o: Order) => {
+    const lines = [
+      `🛍️ *Order from Salem Tailors shop*`,
+      ``,
+      `*Customer:* ${o.customer_name}`,
+      `*Phone:* ${o.customer_phone}`,
+      o.customer_email ? `*Email:* ${o.customer_email}` : null,
+      ``,
+      `*Items:*`,
+      ...o.items.map((i: any) =>
+        `• ${i.name}${i.variant_name ? ` (${i.variant_name})` : ''} × ${i.qty}` +
+        (i.price ? ` — ${i.currency} ${(Number(i.price) * i.qty).toLocaleString()}` : ' — price on inquiry')
+      ),
+      ``,
+      `*Subtotal:* ${o.currency} ${Number(o.subtotal).toLocaleString()}`,
+      o.notes ? `\n*Notes:* ${o.notes}` : null,
+      `\n_Status: ${o.status} · Ref: ${o.id.slice(0, 8)}_`,
+    ].filter(Boolean).join('\n');
+    const waNumber = o.customer_phone.replace(/[^\d]/g, '');
+    const url = `https://wa.me/${waNumber}?text=${encodeURIComponent(lines)}`;
+    const opened = window.open(url, '_blank', 'noopener,noreferrer');
+    if (!opened) return toast.error('Pop-up blocked. Allow pop-ups and retry.');
+    await supabase.from('shop_orders').update({ whatsapp_sent: true }).eq('id', o.id);
+    toast.success('Opened WhatsApp with order details');
+    load();
+  };
+
 
   return (
     <DashboardLayout>
@@ -152,7 +183,18 @@ const AdminShopOrders = () => {
                         {STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                       </SelectContent>
                     </Select>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 gap-1.5 text-[#25D366] border-[#25D366]/40 hover:bg-[#25D366]/10"
+                      onClick={() => resendWhatsApp(o)}
+                      title={o.whatsapp_sent ? 'Resend on WhatsApp' : 'Send on WhatsApp'}
+                    >
+                      <Send className="h-3.5 w-3.5" />
+                      {o.whatsapp_sent ? 'Resend' : 'Send'}
+                    </Button>
                   </div>
+
                 </Card>
               );
             })}
