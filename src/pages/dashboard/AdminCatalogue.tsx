@@ -65,9 +65,25 @@ const AdminCatalogue = () => {
   useEffect(() => { load(); }, []);
 
   const uploadFile = async (file: File): Promise<string | null> => {
-    const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-    const { error } = await supabase.storage.from('catalogue').upload(path, file);
-    if (error) { toast.error(error.message); return null; }
+    if (file.size > 15 * 1024 * 1024) {
+      toast.error(`${file.name} is over 15MB. Please use a smaller image.`);
+      return null;
+    }
+    if (!file.type.startsWith('image/')) {
+      toast.error(`${file.name} is not an image.`);
+      return null;
+    }
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const path = `items/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage.from('catalogue').upload(path, file, {
+      cacheControl: '3600',
+      contentType: file.type,
+      upsert: false,
+    });
+    if (error) {
+      toast.error(`Upload failed: ${error.message}`);
+      return null;
+    }
     return supabase.storage.from('catalogue').getPublicUrl(path).data.publicUrl;
   };
 
@@ -374,14 +390,14 @@ const AdminCatalogue = () => {
               ) : (
                 <div className="space-y-2">
                   {form.variants.map((v, i) => (
-                    <div key={i} className="grid grid-cols-12 gap-2 items-end">
-                      <div className="col-span-5">
+                    <div key={i} className="grid grid-cols-2 sm:grid-cols-12 gap-2 items-end">
+                      <div className="col-span-2 sm:col-span-5">
                         <Input placeholder="e.g. Large / Black" value={v.name} onChange={e => updVariant(i, { name: e.target.value })} />
                       </div>
-                      <div className="col-span-3">
+                      <div className="col-span-1 sm:col-span-3">
                         <Input placeholder="Price" type="number" value={v.price_override ?? ''} onChange={e => updVariant(i, { price_override: e.target.value ? Number(e.target.value) : null })} />
                       </div>
-                      <div className="col-span-3">
+                      <div className="col-span-1 sm:col-span-3">
                         <select
                           value={v.stock_status}
                           onChange={e => updVariant(i, { stock_status: e.target.value as Variant['stock_status'] })}
@@ -392,7 +408,7 @@ const AdminCatalogue = () => {
                           <option value="out_of_stock">Out</option>
                         </select>
                       </div>
-                      <Button type="button" size="icon" variant="ghost" className="h-9 w-9" onClick={() => rmVariant(i)}>
+                      <Button type="button" size="icon" variant="ghost" className="h-9 w-9 col-span-2 sm:col-span-1 justify-self-end" onClick={() => rmVariant(i)}>
                         <X className="h-3 w-3" />
                       </Button>
                     </div>

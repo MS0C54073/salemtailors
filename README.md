@@ -44,7 +44,10 @@ A mobile-first, low-bandwidth optimized web platform that digitises the operatio
 - Landing page with portfolio highlights and CTAs
 - **Product Catalogue** — browse bags, caps, fabrics, and merchandise with images, variants (size/color), and stock status
 - Catalogue item detail page with inquiry-by-chat or WhatsApp
+- **Cart & WhatsApp checkout** — guests or signed-in clients can add to cart (stored locally); orders are saved in the database first, then a WhatsApp deep-link is opened to the shop with the order summary
+- **Order tracking** at `/track` — customers enter their phone number to view real-time status updates without signing in
 - Booking page for first-time consultation requests
+- Password recovery via email (`/forgot-password` → `/reset-password`)
 
 ### Client dashboard
 - Order request submission with reference images and preferences
@@ -57,7 +60,8 @@ A mobile-first, low-bandwidth optimized web platform that digitises the operatio
 ### Admin / Staff dashboard
 - **Customer management** — search, filter by tier/source, CSV export, promote to Member
 - **Orders** — auto-detects member tier by phone, applies member discount + priority badge
-- **Catalogue management** — categories, items, variants, multi-image upload (Supabase Storage)
+- **Catalogue management** — categories, items, variants, multi-image upload (Lovable Cloud Storage), draft/active/sold-out states
+- **Shop Orders** — view WhatsApp cart orders with realtime new-order toast + chime, unread badge on nav, and **Resend WhatsApp** action to re-open the deep-link
 - **Appointments & Slots** — publish availability, confirm bookings
 - **Finance** — payments, expenses, deposit/balance tracking
 - **Portfolio** — featured work gallery
@@ -66,9 +70,10 @@ A mobile-first, low-bandwidth optimized web platform that digitises the operatio
 - Real-time chat panel with all clients
 
 ### Cross-cutting
-- Supabase RLS on every table, with `is_staff()` and `has_role()` security-definer functions
+- Row-Level Security on every table, with `is_staff()` and `has_role()` security-definer functions
 - Strict mobile-first responsive layout with overflow "More" sheet for staff nav
 - Persistent back navigation across all dashboard routes
+- SEO baseline: per-route `<Seo>` component, sitemap.xml, robots.txt, llms.txt, JSON-LD organization schema
 
 ---
 
