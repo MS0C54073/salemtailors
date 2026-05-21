@@ -65,9 +65,25 @@ const AdminCatalogue = () => {
   useEffect(() => { load(); }, []);
 
   const uploadFile = async (file: File): Promise<string | null> => {
-    const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-    const { error } = await supabase.storage.from('catalogue').upload(path, file);
-    if (error) { toast.error(error.message); return null; }
+    if (file.size > 15 * 1024 * 1024) {
+      toast.error(`${file.name} is over 15MB. Please use a smaller image.`);
+      return null;
+    }
+    if (!file.type.startsWith('image/')) {
+      toast.error(`${file.name} is not an image.`);
+      return null;
+    }
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const path = `items/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage.from('catalogue').upload(path, file, {
+      cacheControl: '3600',
+      contentType: file.type,
+      upsert: false,
+    });
+    if (error) {
+      toast.error(`Upload failed: ${error.message}`);
+      return null;
+    }
     return supabase.storage.from('catalogue').getPublicUrl(path).data.publicUrl;
   };
 
