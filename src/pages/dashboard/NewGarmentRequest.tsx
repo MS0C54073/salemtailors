@@ -53,12 +53,16 @@ const NewGarmentRequest = () => {
       // Upload images
       const imageUrls: string[] = [];
       for (const file of images) {
-        const ext = file.name.split('.').pop();
-        const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        if (!file.type.startsWith('image/')) { toast.error(`${file.name} is not an image`); continue; }
+        if (file.size > 15 * 1024 * 1024) { toast.error(`${file.name} is over 15MB`); continue; }
+        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
         const { error: uploadError } = await supabase.storage
           .from('garment-images')
-          .upload(path, file, { cacheControl: '3600' });
-        if (!uploadError) {
+          .upload(path, file, { cacheControl: '3600', contentType: file.type, upsert: false });
+        if (uploadError) {
+          toast.error(`Upload failed: ${uploadError.message}`);
+        } else {
           const { data: { publicUrl } } = supabase.storage.from('garment-images').getPublicUrl(path);
           imageUrls.push(publicUrl);
         }
