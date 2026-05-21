@@ -29,10 +29,15 @@ const AdminPortfolio = () => {
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!file.type.startsWith('image/')) { toast.error('Please choose an image file'); return; }
+    if (file.size > 15 * 1024 * 1024) { toast.error('Image must be under 15MB'); return; }
     setUploading(true);
-    const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-    const { error } = await supabase.storage.from('portfolio').upload(path, file);
-    if (error) { toast.error(error.message); setUploading(false); return; }
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage.from('portfolio').upload(path, file, {
+      cacheControl: '3600', contentType: file.type, upsert: false,
+    });
+    if (error) { toast.error(`Upload failed: ${error.message}`); setUploading(false); return; }
     const { data } = supabase.storage.from('portfolio').getPublicUrl(path);
     setForm({ ...form, image_url: data.publicUrl });
     setUploading(false);
