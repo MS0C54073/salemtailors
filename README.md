@@ -44,7 +44,10 @@ A mobile-first, low-bandwidth optimized web platform that digitises the operatio
 - Landing page with portfolio highlights and CTAs
 - **Product Catalogue** — browse bags, caps, fabrics, and merchandise with images, variants (size/color), and stock status
 - Catalogue item detail page with inquiry-by-chat or WhatsApp
+- **Cart & WhatsApp checkout** — guests or signed-in clients can add to cart (stored locally); orders are saved in the database first, then a WhatsApp deep-link is opened to the shop with the order summary
+- **Order tracking** at `/track` — customers enter their phone number to view real-time status updates without signing in
 - Booking page for first-time consultation requests
+- Password recovery via email (`/forgot-password` → `/reset-password`)
 
 ### Client dashboard
 - Order request submission with reference images and preferences
