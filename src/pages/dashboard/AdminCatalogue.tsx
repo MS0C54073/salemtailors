@@ -390,14 +390,14 @@ const AdminCatalogue = () => {
               ) : (
                 <div className="space-y-2">
                   {form.variants.map((v, i) => (
-                    <div key={i} className="grid grid-cols-12 gap-2 items-end">
-                      <div className="col-span-5">
+                    <div key={i} className="grid grid-cols-2 sm:grid-cols-12 gap-2 items-end">
+                      <div className="col-span-2 sm:col-span-5">
                         <Input placeholder="e.g. Large / Black" value={v.name} onChange={e => updVariant(i, { name: e.target.value })} />
                       </div>
-                      <div className="col-span-3">
+                      <div className="col-span-1 sm:col-span-3">
                         <Input placeholder="Price" type="number" value={v.price_override ?? ''} onChange={e => updVariant(i, { price_override: e.target.value ? Number(e.target.value) : null })} />
                       </div>
-                      <div className="col-span-3">
+                      <div className="col-span-1 sm:col-span-3">
                         <select
                           value={v.stock_status}
                           onChange={e => updVariant(i, { stock_status: e.target.value as Variant['stock_status'] })}
@@ -408,7 +408,7 @@ const AdminCatalogue = () => {
                           <option value="out_of_stock">Out</option>
                         </select>
                       </div>
-                      <Button type="button" size="icon" variant="ghost" className="h-9 w-9" onClick={() => rmVariant(i)}>
+                      <Button type="button" size="icon" variant="ghost" className="h-9 w-9 col-span-2 sm:col-span-1 justify-self-end" onClick={() => rmVariant(i)}>
                         <X className="h-3 w-3" />
                       </Button>
                     </div>
