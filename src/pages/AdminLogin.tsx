@@ -11,9 +11,8 @@ import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
 const AdminLogin = () => {
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ email: '', password: '', fullName: '', phone: '' });
+  const [form, setForm] = useState({ email: '', password: '' });
   const { user, role } = useAuth();
   const navigate = useNavigate();
 
@@ -22,7 +21,9 @@ const AdminLogin = () => {
       if (role === 'super_admin' || role === 'admin' || role === 'sub_admin') {
         navigate('/dashboard/admin');
       } else {
-        toast.error('This account is not an admin. Contact a super admin to be assigned a role.');
+        // Not a staff account — sign them out of admin portal
+        supabase.auth.signOut();
+        toast.error('This account is not authorized for the admin portal.');
       }
     }
   }, [user, role, navigate]);
@@ -31,25 +32,12 @@ const AdminLogin = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      if (mode === 'login') {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: form.email.trim(),
-          password: form.password,
-        });
-        if (error) throw error;
-        toast.success('Welcome back!');
-      } else {
-        const { error } = await supabase.auth.signUp({
-          email: form.email.trim(),
-          password: form.password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/admin`,
-            data: { full_name: form.fullName, phone: form.phone },
-          },
-        });
-        if (error) throw error;
-        toast.success('Account created — please verify your email, then ask a super admin to grant admin access.');
-      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email: form.email.trim(),
+        password: form.password,
+      });
+      if (error) throw error;
+      toast.success('Welcome back!');
     } catch (err: any) {
       toast.error(err.message || 'Authentication failed');
     } finally {
@@ -77,35 +65,11 @@ const AdminLogin = () => {
               Salem Admin
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {mode === 'login' ? 'Sign in to manage your shop' : 'Create your admin account'}
+              Sign in to manage your shop
             </p>
           </div>
 
           <form onSubmit={submit} className="space-y-4">
-            {mode === 'signup' && (
-              <>
-                <div>
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <Input
-                    id="fullName"
-                    value={form.fullName}
-                    onChange={e => setForm(f => ({ ...f, fullName: e.target.value }))}
-                    placeholder="Your full name"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input
-                    id="phone"
-                    value={form.phone}
-                    onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                    placeholder="+260 97X XXX XXX"
-                    required
-                  />
-                </div>
-              </>
-            )}
             <div>
               <Label htmlFor="email">Email</Label>
               <Input
@@ -123,7 +87,7 @@ const AdminLogin = () => {
               <Input
                 id="password"
                 type="password"
-                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                autoComplete="current-password"
                 value={form.password}
                 onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
                 placeholder="••••••••"
@@ -134,34 +98,19 @@ const AdminLogin = () => {
 
             <Button type="submit" className="w-full" disabled={loading}>
               {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {mode === 'login' ? 'Sign In' : 'Create Admin Account'}
+              Sign In
             </Button>
 
-            {mode === 'login' && (
-              <div className="text-center">
-                <Link to="/forgot-password" className="text-xs text-primary hover:underline font-medium">
-                  Forgot your password?
-                </Link>
-              </div>
-            )}
+            <div className="text-center">
+              <Link to="/forgot-password" className="text-xs text-primary hover:underline font-medium">
+                Forgot your password?
+              </Link>
+            </div>
           </form>
 
-          <p className="text-center text-xs text-muted-foreground mt-4">
-            {mode === 'login' ? "First time setting up? " : 'Already have an account? '}
-            <button
-              type="button"
-              onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
-              className="text-primary font-medium hover:underline"
-            >
-              {mode === 'login' ? 'Create an account' : 'Sign in'}
-            </button>
+          <p className="text-center text-[11px] text-muted-foreground/70 mt-5 leading-relaxed">
+            Admin portal is invite-only. New admin or sub-admin accounts are created by the super admin from Staff Management.
           </p>
-
-          {mode === 'signup' && (
-            <p className="text-[11px] text-muted-foreground/70 text-center mt-3 leading-relaxed">
-              The first registered user must be granted super admin role. After signup, contact your developer or use the seed instructions in the README.
-            </p>
-          )}
         </Card>
       </div>
     </div>
