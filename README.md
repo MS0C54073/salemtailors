@@ -1,6 +1,12 @@
 # Salem Tailors — Digital Shop Management System
 
-A mobile-first, low-bandwidth optimized web platform that digitises the operations of **Salem Tailors** in Lusaka, Zambia. The system replaces manual paper records with a unified workflow covering customer registration, measurement profiles, order tracking, appointments, a public product catalogue, finance, and real-time client/staff messaging.
+My parents are both tailors, and for years I watched them run their business using notebooks, paper records, and handwritten measurements. While their craftsmanship was exceptional, managing customers, orders, appointments, and finances manually often took valuable time away from the work they loved. Wanting to make their daily operations easier, I decided to build a simple digital solution for them.
+
+Salem Tailors is a web based management system created to help modernize and simplify the operations of a tailoring business. The platform brings customer records, measurement profiles, order tracking, appointments, financial management, product catalogues, and customer communication into one centralized system that is accessible from mobile devices and designed to work well even in low connectivity environments.
+
+What began as a personal project for my parents has grown into a platform with the potential to support tailoring businesses of different sizes. The current system provides a strong foundation, and there are plans to introduce many more features in the future, including advanced reporting, inventory management, mobile notifications, analytics, online payments, and other tools that will further improve efficiency and customer experience.
+
+This project is a reflection of how technology can be used to solve real problems, inspired by the people who inspired me to build in the first place.
 
 **Live URLs**
 - Production: https://salemtailors.app
