@@ -129,7 +129,7 @@ const CatalogueItem = () => {
             availability: item.stock_status === 'out_of_stock'
               ? 'https://schema.org/OutOfStock'
               : 'https://schema.org/InStock',
-            url: `https://salemtailors.lovable.app/catalogue/${item.slug}`,
+            url: `https://salemtailors.app/catalogue/${item.slug}`,
           } : undefined,
         }}
       />

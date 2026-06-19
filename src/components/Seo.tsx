@@ -9,7 +9,7 @@ interface SeoProps {
   jsonLd?: Record<string, any> | Record<string, any>[];
 }
 
-const SITE_URL = 'https://salemtailors.lovable.app';
+const SITE_URL = 'https://salemtailors.app';
 const DEFAULT_IMAGE =
   'https://storage.googleapis.com/gpt-engineer-file-uploads/O1Koijy2sAVXFD7KjLQGZ6jPwy92/social-images/social-1777032849497-MIT.webp';
 

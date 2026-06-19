@@ -3,11 +3,7 @@
 A mobile-first, low-bandwidth optimized web platform that digitises the operations of **Salem Tailors** in Lusaka, Zambia. The system replaces manual paper records with a unified workflow covering customer registration, measurement profiles, order tracking, appointments, a public product catalogue, finance, and real-time client/staff messaging.
 
 **Live URLs**
-- Production: https://salemtailors.lovable.app
-- Lovable Project: https://lovable.dev/projects/e92e2d92-99f1-4361-9b39-65a9e707e00f
-
----
-
+- Production: https://salemtailors.app
 ## Table of Contents
 
 1. [Tech Stack](#tech-stack)
@@ -31,10 +27,10 @@ A mobile-first, low-bandwidth optimized web platform that digitises the operatio
 | Styling          | Tailwind CSS v3 + shadcn/ui (semantic HSL design tokens)    |
 | Routing / State  | react-router-dom v6, @tanstack/react-query                  |
 | Forms / Validation | react-hook-form + Zod                                     |
-| Backend (BaaS)   | Lovable Cloud (Supabase: Postgres, Auth, Storage, RLS, Edge Functions) |
+| Backend (BaaS)   | Supabase Cloud (Postgres, Auth, Storage, RLS, Edge Functions) |
 | Realtime         | Supabase Realtime (Postgres changes for messages)           |
 | Notifications    | Email + WhatsApp deep-links (manual click from admin)       |
-| Hosting          | Lovable (auto-deploys on each change)                       |
+| Hosting          | Cloud hosting (auto-deploys on each change)                 |
 
 ---
 
@@ -60,7 +56,7 @@ A mobile-first, low-bandwidth optimized web platform that digitises the operatio
 ### Admin / Staff dashboard
 - **Customer management** — search, filter by tier/source, CSV export, promote to Member
 - **Orders** — auto-detects member tier by phone, applies member discount + priority badge
-- **Catalogue management** — categories, items, variants, multi-image upload (Lovable Cloud Storage), draft/active/sold-out states
+- **Catalogue management** — categories, items, variants, multi-image upload (cloud storage), draft/active/sold-out states
 - **Shop Orders** — view WhatsApp cart orders with realtime new-order toast + chime, unread badge on nav, and **Resend WhatsApp** action to re-open the deep-link
 - **Appointments & Slots** — publish availability, confirm bookings
 - **Finance** — payments, expenses, deposit/balance tracking
@@ -104,7 +100,7 @@ graph TB
         Shared["Shared UI<br/>shadcn/ui + Tailwind"]
     end
 
-    subgraph Cloud["Lovable Cloud (Supabase)"]
+    subgraph Cloud["Supabase Cloud"]
         SupaAuth["Auth<br/>JWT + Email"]
         Postgres[("Postgres<br/>+ RLS Policies")]
         Storage["Storage<br/>catalogue, references"]
@@ -386,7 +382,7 @@ npm install        # or: bun install
 npm run dev        # or: bun run dev
 ```
 
-Environment variables (`.env`) are auto-managed by Lovable Cloud:
+Environment variables (`.env`) are auto-managed by the cloud provider:
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_PUBLISHABLE_KEY`
 - `VITE_SUPABASE_PROJECT_ID`
@@ -453,7 +449,7 @@ supabase/
 
 ## Deployment
 
-The project is hosted on Lovable. To publish a new version, open the [Lovable project](https://lovable.dev/projects/e92e2d92-99f1-4361-9b39-65a9e707e00f) and click **Share → Publish**. Edge functions and database migrations are deployed automatically.
+The project is hosted on cloud hosting. To publish a new version, open the project dashboard and click **Share → Publish**. Edge functions and database migrations are deployed automatically.
 
 To attach a custom domain, go to **Project → Settings → Domains → Connect Domain**.
 

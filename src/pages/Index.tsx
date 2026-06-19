@@ -19,7 +19,7 @@ const HOME_JSONLD = [
     '@type': 'LocalBusiness',
     name: 'Salem Tailors',
     description: 'Bespoke African tailoring, chitenge wear, bags, caps and alterations in Lusaka.',
-    url: 'https://salemtailors.lovable.app/',
+    url: 'https://salemtailors.app/',
     telephone: '+260979287496',
     address: {
       '@type': 'PostalAddress',
