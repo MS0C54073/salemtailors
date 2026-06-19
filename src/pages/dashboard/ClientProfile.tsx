@@ -29,13 +29,13 @@ const ClientProfile = () => {
       const [{ data: p }, { data: m }, { data: s }] = await Promise.all([
         supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
         supabase.from('customer_measurements').select('*').eq('profile_user_id', user.id),
-        supabase.from('app_settings').select('member_discount_percent').limit(1).maybeSingle(),
+        supabase.rpc('get_member_discount'),
       ]);
       setProfile(p);
       const grouped: any = { male: null, female: null, child: null };
       (m || []).forEach((row: any) => { grouped[row.template as MeasurementTemplate] = row; });
       setMeasurements(grouped);
-      setDiscount(s?.member_discount_percent ?? 10);
+      setDiscount((s as number | null) ?? 10);
       setLoading(false);
     })();
   }, [user]);
