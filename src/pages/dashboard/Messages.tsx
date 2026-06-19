@@ -90,7 +90,7 @@ const Messages = () => {
     loadMessages();
 
     // Subscribe to realtime
-    const channel = supabase.channel(`chat-${selectedUser.id}`)
+    const channel = supabase.channel(`user:${user.id}:chat-${selectedUser.id}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
