@@ -24,16 +24,17 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
     { to: '/dashboard/client/messages', icon: MessageCircle, label: 'Messages' },
   ];
 
+  const isSubAdmin = role === 'sub_admin';
   const staffLinks = [
     { to: '/dashboard/admin', icon: LayoutDashboard, label: 'Home' },
-    { to: '/dashboard/admin/orders', icon: ShoppingBag, label: 'Orders' },
+    { to: '/dashboard/admin/orders', icon: ShoppingBag, label: isSubAdmin ? 'My Orders' : 'Orders' },
     { to: '/dashboard/admin/shop-orders', icon: ShoppingBag, label: 'Shop Orders' },
     { to: '/dashboard/admin/catalogue', icon: Package, label: 'Catalogue' },
-    { to: '/dashboard/admin/appointments', icon: Calendar, label: 'Calendar' },
+    ...(!isSubAdmin ? [{ to: '/dashboard/admin/appointments', icon: Calendar, label: 'Calendar' }] : []),
     { to: '/dashboard/admin/customers', icon: UserCircle, label: 'Customers' },
-    { to: '/dashboard/admin/finance', icon: Wallet, label: 'Finance' },
+    ...(!isSubAdmin ? [{ to: '/dashboard/admin/finance', icon: Wallet, label: 'Finance' }] : []),
     { to: '/dashboard/admin/portfolio', icon: ImageIcon, label: 'Portfolio' },
-    { to: '/dashboard/admin/messages', icon: MessageCircle, label: 'Messages' },
+    ...(!isSubAdmin ? [{ to: '/dashboard/admin/messages', icon: MessageCircle, label: 'Messages' }] : []),
     ...(role === 'super_admin' ? [{ to: '/dashboard/admin/staff', icon: Users, label: 'Staff' }] : []),
   ];
 
