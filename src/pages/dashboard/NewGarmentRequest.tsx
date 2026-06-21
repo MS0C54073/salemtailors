@@ -65,20 +65,26 @@ const NewGarmentRequest = () => {
       // Upload images
       const imageUrls: string[] = [];
       for (const file of images) {
-        if (!file.type.startsWith('image/')) { toast.error(`${file.name} is not an image`); continue; }
-        if (file.size > 15 * 1024 * 1024) { toast.error(`${file.name} is over 15MB`); continue; }
-        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
-        const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        let validated;
+        try {
+          validated = await validateImageFile(file, { maxBytes: 10 * 1024 * 1024 });
+        } catch (err) {
+          const msg = err instanceof ImageValidationError ? err.message : 'Invalid image';
+          toast.error(`${file.name}: ${msg}`);
+          continue;
+        }
+        const path = `${user.id}/${safeStorageName(validated.ext)}`;
         const { error: uploadError } = await supabase.storage
           .from('garment-images')
-          .upload(path, file, { cacheControl: '3600', contentType: file.type, upsert: false });
+          .upload(path, file, { cacheControl: '3600', contentType: validated.mime, upsert: false });
         if (uploadError) {
           toast.error(`Upload failed: ${uploadError.message}`);
         } else {
-          // Store the storage path; the bucket is private and rendered via signed URLs.
+          await scanUploadedFile(path, 'garment-images');
           imageUrls.push(path);
         }
       }
+
 
       const { error } = await supabase.from('garment_requests').insert({
         client_id: user.id,
