@@ -47,7 +47,7 @@ const ClientOrders = () => {
                   {order.reference_images?.length > 0 && (
                     <div className="flex gap-1 mt-2">
                       {order.reference_images.slice(0, 3).map((img: string, i: number) => (
-                        <img key={i} src={img} alt="" className="w-12 h-12 rounded object-cover border border-border" />
+                        <SignedImage key={i} src={img} alt="" className="w-12 h-12 rounded object-cover border border-border" />
                       ))}
                       {order.reference_images.length > 3 && (
                         <div className="w-12 h-12 rounded bg-muted flex items-center justify-center text-xs text-muted-foreground">

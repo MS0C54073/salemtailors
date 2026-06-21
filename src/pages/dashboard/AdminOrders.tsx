@@ -230,7 +230,7 @@ const AdminOrders = () => {
                 {order.reference_images?.length > 0 && (
                   <div className="flex gap-1 overflow-x-auto">
                     {order.reference_images.slice(0, 4).map((img: string, i: number) => (
-                      <img key={i} src={img} alt="" className="w-14 h-14 rounded object-cover border border-border shrink-0" />
+                      <SignedImage key={i} src={img} alt="" className="w-14 h-14 rounded object-cover border border-border shrink-0" />
                     ))}
                   </div>
                 )}
