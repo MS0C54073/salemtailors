@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { z } from 'zod';
 import Seo from '@/components/Seo';
+import { validateImageFile, ImageValidationError, safeStorageName, scanUploadedFile } from '@/lib/image-validation';
+
 
 const APPOINTMENT_TYPES = [
   { value: 'consultation', label: 'Consultation' },
