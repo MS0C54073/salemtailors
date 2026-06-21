@@ -20,6 +20,7 @@ import { toCSV, downloadCSV } from '@/lib/csv-export';
 import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { Plus, MessageCircle, Phone, Image as ImageIcon, Loader2, X } from 'lucide-react';
+import SignedImage from '@/components/SignedImage';
 
 const getStatusFlow = (s: string) => ORDER_STATUS_FLOW.find(x => x.value === s) || ORDER_STATUS_FLOW[0];
 
