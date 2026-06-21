@@ -9,8 +9,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { GARMENT_CATEGORIES } from '@/lib/supabase-helpers';
+import { validateImageFile, ImageValidationError, safeStorageName, scanUploadedFile } from '@/lib/image-validation';
 import { toast } from 'sonner';
 import { Loader2, Upload, X } from 'lucide-react';
+
 
 const NewGarmentRequest = () => {
   const { user } = useAuth();
