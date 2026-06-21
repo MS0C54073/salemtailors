@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { z } from 'zod';
 import Seo from '@/components/Seo';
+import { validateImageFile, ImageValidationError, safeStorageName, scanUploadedFile } from '@/lib/image-validation';
+
 
 const APPOINTMENT_TYPES = [
   { value: 'consultation', label: 'Consultation' },
@@ -90,15 +92,15 @@ const Book = () => {
     toast.success(`Set to ${fmtDate(now)} ${fmtTime(now)} — feel free to edit.`);
   };
 
-  const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please choose an image file');
-      return;
-    }
-    if (file.size > MAX_IMAGE_BYTES) {
-      toast.error('Image must be under 5MB');
+    try {
+      await validateImageFile(file, { maxBytes: MAX_IMAGE_BYTES });
+    } catch (err) {
+      const msg = err instanceof ImageValidationError ? err.message : 'Invalid image';
+      toast.error(msg);
       return;
     }
     setImageFile(file);
@@ -112,19 +114,26 @@ const Book = () => {
   };
 
   const uploadImage = async (file: File): Promise<string | null> => {
-    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-    const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    let validated;
+    try {
+      validated = await validateImageFile(file, { maxBytes: MAX_IMAGE_BYTES });
+    } catch {
+      return null;
+    }
+    const path = safeStorageName(validated.ext);
     const { error } = await supabase.storage.from('booking-images').upload(path, file, {
-      contentType: file.type,
+      contentType: validated.mime,
       upsert: false,
     });
     if (error) {
       console.error('Image upload failed', error);
       return null;
     }
+    await scanUploadedFile(path, 'booking-images');
     const { data } = supabase.storage.from('booking-images').getPublicUrl(path);
     return data.publicUrl;
   };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -9,8 +9,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { GARMENT_CATEGORIES } from '@/lib/supabase-helpers';
+import { validateImageFile, ImageValidationError, safeStorageName, scanUploadedFile } from '@/lib/image-validation';
 import { toast } from 'sonner';
 import { Loader2, Upload, X } from 'lucide-react';
+
 
 const NewGarmentRequest = () => {
   const { user } = useAuth();
@@ -25,19 +27,29 @@ const NewGarmentRequest = () => {
   const [images, setImages] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
 
-  const handleImageAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageAdd = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    // Reset the input so the same filename can be re-selected after a rejection
+    e.target.value = '';
     if (images.length + files.length > 5) {
       toast.error('Maximum 5 images allowed');
       return;
     }
-    setImages(prev => [...prev, ...files]);
-    files.forEach(file => {
+    for (const file of files) {
+      try {
+        await validateImageFile(file, { maxBytes: 10 * 1024 * 1024 });
+      } catch (err) {
+        const msg = err instanceof ImageValidationError ? err.message : 'Invalid image';
+        toast.error(`${file.name}: ${msg}`);
+        continue;
+      }
+      setImages(prev => [...prev, file]);
       const reader = new FileReader();
       reader.onloadend = () => setPreviews(prev => [...prev, reader.result as string]);
       reader.readAsDataURL(file);
-    });
+    }
   };
+
 
   const removeImage = (index: number) => {
     setImages(prev => prev.filter((_, i) => i !== index));
@@ -53,20 +65,26 @@ const NewGarmentRequest = () => {
       // Upload images
       const imageUrls: string[] = [];
       for (const file of images) {
-        if (!file.type.startsWith('image/')) { toast.error(`${file.name} is not an image`); continue; }
-        if (file.size > 15 * 1024 * 1024) { toast.error(`${file.name} is over 15MB`); continue; }
-        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
-        const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        let validated;
+        try {
+          validated = await validateImageFile(file, { maxBytes: 10 * 1024 * 1024 });
+        } catch (err) {
+          const msg = err instanceof ImageValidationError ? err.message : 'Invalid image';
+          toast.error(`${file.name}: ${msg}`);
+          continue;
+        }
+        const path = `${user.id}/${safeStorageName(validated.ext)}`;
         const { error: uploadError } = await supabase.storage
           .from('garment-images')
-          .upload(path, file, { cacheControl: '3600', contentType: file.type, upsert: false });
+          .upload(path, file, { cacheControl: '3600', contentType: validated.mime, upsert: false });
         if (uploadError) {
           toast.error(`Upload failed: ${uploadError.message}`);
         } else {
-          // Store the storage path; the bucket is private and rendered via signed URLs.
+          await scanUploadedFile(path, 'garment-images');
           imageUrls.push(path);
         }
       }
+
 
       const { error } = await supabase.from('garment_requests').insert({
         client_id: user.id,
