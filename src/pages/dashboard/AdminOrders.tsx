@@ -79,15 +79,28 @@ const AdminOrders = () => {
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
+    let validated;
+    try {
+      validated = await validateImageFile(file, { maxBytes: 10 * 1024 * 1024 });
+    } catch (err) {
+      const msg = err instanceof ImageValidationError ? err.message : 'Invalid image';
+      toast.error(msg);
+      return;
+    }
     setUploading(true);
-    const path = `orders/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-    const { error } = await supabase.storage.from('booking-images').upload(path, file);
+    const path = `orders/${safeStorageName(validated.ext)}`;
+    const { error } = await supabase.storage
+      .from('booking-images')
+      .upload(path, file, { contentType: validated.mime, upsert: false });
     if (error) { toast.error(error.message); setUploading(false); return; }
+    await scanUploadedFile(path, 'booking-images');
     const { data } = supabase.storage.from('booking-images').getPublicUrl(path);
     setForm((f: any) => ({ ...f, reference_images: [...f.reference_images, data.publicUrl] }));
     setUploading(false);
   };
+
 
   const saveOrder = async () => {
     if (!form.customer_name.trim() || !form.customer_phone.trim() || !form.description.trim()) {
