@@ -27,19 +27,29 @@ const NewGarmentRequest = () => {
   const [images, setImages] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
 
-  const handleImageAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageAdd = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    // Reset the input so the same filename can be re-selected after a rejection
+    e.target.value = '';
     if (images.length + files.length > 5) {
       toast.error('Maximum 5 images allowed');
       return;
     }
-    setImages(prev => [...prev, ...files]);
-    files.forEach(file => {
+    for (const file of files) {
+      try {
+        await validateImageFile(file, { maxBytes: 10 * 1024 * 1024 });
+      } catch (err) {
+        const msg = err instanceof ImageValidationError ? err.message : 'Invalid image';
+        toast.error(`${file.name}: ${msg}`);
+        continue;
+      }
+      setImages(prev => [...prev, file]);
       const reader = new FileReader();
       reader.onloadend = () => setPreviews(prev => [...prev, reader.result as string]);
       reader.readAsDataURL(file);
-    });
+    }
   };
+
 
   const removeImage = (index: number) => {
     setImages(prev => prev.filter((_, i) => i !== index));
