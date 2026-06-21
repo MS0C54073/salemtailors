@@ -20,6 +20,7 @@ import { toCSV, downloadCSV } from '@/lib/csv-export';
 import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { Plus, MessageCircle, Phone, Image as ImageIcon, Loader2, X } from 'lucide-react';
+import SignedImage from '@/components/SignedImage';
 
 const getStatusFlow = (s: string) => ORDER_STATUS_FLOW.find(x => x.value === s) || ORDER_STATUS_FLOW[0];
 
@@ -230,7 +231,7 @@ const AdminOrders = () => {
                 {order.reference_images?.length > 0 && (
                   <div className="flex gap-1 overflow-x-auto">
                     {order.reference_images.slice(0, 4).map((img: string, i: number) => (
-                      <img key={i} src={img} alt="" className="w-14 h-14 rounded object-cover border border-border shrink-0" />
+                      <SignedImage key={i} src={img} alt="" className="w-14 h-14 rounded object-cover border border-border shrink-0" />
                     ))}
                   </div>
                 )}

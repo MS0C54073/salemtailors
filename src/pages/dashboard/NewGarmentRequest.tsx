@@ -63,8 +63,8 @@ const NewGarmentRequest = () => {
         if (uploadError) {
           toast.error(`Upload failed: ${uploadError.message}`);
         } else {
-          const { data: { publicUrl } } = supabase.storage.from('garment-images').getPublicUrl(path);
-          imageUrls.push(publicUrl);
+          // Store the storage path; the bucket is private and rendered via signed URLs.
+          imageUrls.push(path);
         }
       }
 
