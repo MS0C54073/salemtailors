@@ -455,22 +455,25 @@ const ProcessScene = ({ stage, stageDurationMs }: { stage: Stage; stageDurationM
   }, [stage.id, stage.steps.length, stepDuration]);
 
   return (
-    <div className={`relative w-full h-full bg-gradient-to-br ${stage.processGradient} overflow-hidden`}>
-      {/* Subtle grid */}
-      <svg className="absolute inset-0 w-full h-full opacity-15" aria-hidden>
-        <defs>
-          <pattern id={`grid-${stage.id}`} width="24" height="24" patternUnits="userSpaceOnUse">
-            <path d="M 24 0 L 0 0 0 24" fill="none" stroke={FG} strokeWidth="0.5" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill={`url(#grid-${stage.id})`} />
-      </svg>
+    <div className={`relative w-full h-full bg-gradient-to-br ${stage.processGradient} overflow-hidden flex flex-col`}>
+      {/* Top: animation area */}
+      <div className="relative flex-1 min-h-0 overflow-hidden">
+        {/* Subtle grid */}
+        <svg className="absolute inset-0 w-full h-full opacity-15" aria-hidden>
+          <defs>
+            <pattern id={`grid-${stage.id}`} width="24" height="24" patternUnits="userSpaceOnUse">
+              <path d="M 24 0 L 0 0 0 24" fill="none" stroke={FG} strokeWidth="0.5" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill={`url(#grid-${stage.id})`} />
+        </svg>
 
-      {/* Animated workbench scene */}
-      <Scene />
+        {/* Animated workbench scene */}
+        <Scene />
+      </div>
 
-      {/* Bottom overlay: label + step checklist synced to the animation */}
-      <div className="absolute inset-x-0 bottom-0 z-10 px-5 pb-4 pt-10 bg-gradient-to-t from-black/50 via-black/20 to-transparent text-primary-foreground">
+      {/* Bottom panel: label + step checklist (solid, no overlap with animation) */}
+      <div className="relative z-10 px-5 py-4 bg-black/55 backdrop-blur-sm border-t border-primary-foreground/15 text-primary-foreground">
         <span className="block text-[10px] uppercase tracking-[0.22em] text-primary-foreground/85 mb-1">
           Process
         </span>
