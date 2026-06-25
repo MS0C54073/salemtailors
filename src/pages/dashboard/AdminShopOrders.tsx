@@ -40,7 +40,7 @@ const AdminShopOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
-  const { markAllSeen } = useShopOrderAlerts(true);
+  const { markAllSeen, status, lastUpdatedAt, refresh: refreshAlerts } = useShopOrderAlerts(true);
 
   const load = async () => {
     setLoading(true);
@@ -101,15 +101,49 @@ const AdminShopOrders = () => {
         <div className="flex items-center justify-between gap-2">
           <div>
             <h1 className="font-serif text-2xl font-bold text-foreground">Shop Orders</h1>
-            <p className="text-xs text-muted-foreground">Orders placed from the catalogue cart</p>
+            <p className="text-xs text-muted-foreground flex items-center gap-2">
+              <span>Orders placed from the catalogue cart</span>
+              <span
+                className={
+                  'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] border ' +
+                  (status === 'online'
+                    ? 'text-green-600 border-green-500/30 bg-green-500/10'
+                    : status === 'loading'
+                      ? 'text-primary border-primary/30 bg-primary/10'
+                      : status === 'offline'
+                        ? 'text-destructive border-destructive/30 bg-destructive/10'
+                        : 'text-muted-foreground border-border')
+                }
+                title={lastUpdatedAt ? `Last updated ${new Date(lastUpdatedAt).toLocaleTimeString()}` : ''}
+              >
+                <span
+                  className={
+                    'h-1.5 w-1.5 rounded-full ' +
+                    (status === 'online'
+                      ? 'bg-green-500'
+                      : status === 'loading'
+                        ? 'bg-primary animate-pulse'
+                        : status === 'offline'
+                          ? 'bg-destructive'
+                          : 'bg-muted-foreground')
+                  }
+                />
+                {status === 'loading' ? 'syncing' : status === 'offline' ? 'reconnecting' : 'live'}
+              </span>
+            </p>
           </div>
-          <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="w-36 h-9"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              {STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="ghost" className="h-9 px-2" onClick={() => { refreshAlerts(); load(); }} title="Refresh now">
+              <Loader2 className={'h-4 w-4 ' + (status === 'loading' ? 'animate-spin' : '')} />
+            </Button>
+            <Select value={filter} onValueChange={setFilter}>
+              <SelectTrigger className="w-36 h-9"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                {STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {loading ? (
