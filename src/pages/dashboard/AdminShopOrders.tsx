@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ShoppingBag, Phone, Mail, MessageCircle, Loader2, Send } from 'lucide-react';
+import { ShoppingBag, Phone, Mail, MessageCircle, Loader2, Send, BellRing, CheckCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -40,7 +40,7 @@ const AdminShopOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
-  const { markAllSeen, status, lastUpdatedAt, refresh: refreshAlerts } = useShopOrderAlerts(true);
+  const { unread, markAllSeen, status, lastUpdatedAt, refresh: refreshAlerts } = useShopOrderAlerts(true);
 
   const load = async () => {
     setLoading(true);
@@ -51,7 +51,8 @@ const AdminShopOrders = () => {
   };
 
   useEffect(() => { load(); }, [filter]);
-  useEffect(() => { markAllSeen(); }, [markAllSeen, orders.length]);
+  // Note: we intentionally do NOT auto-mark as seen on load — the badge stays
+  // visible until the admin explicitly refreshes or clicks "Mark all as seen".
 
   // Poll for updates — shop_orders is no longer in the realtime publication.
   useEffect(() => {
@@ -100,8 +101,19 @@ const AdminShopOrders = () => {
       <div className="max-w-3xl mx-auto space-y-4">
         <div className="flex items-center justify-between gap-2">
           <div>
-            <h1 className="font-serif text-2xl font-bold text-foreground">Shop Orders</h1>
-            <p className="text-xs text-muted-foreground flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="font-serif text-2xl font-bold text-foreground">Shop Orders</h1>
+              {unread > 0 && (
+                <Badge
+                  className="bg-primary text-primary-foreground border-transparent gap-1 animate-pulse"
+                  title={`${unread} new since you last checked`}
+                >
+                  <BellRing className="h-3 w-3" />
+                  {unread} new
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground flex items-center gap-2 mt-1">
               <span>Orders placed from the catalogue cart</span>
               <span
                 className={
@@ -133,7 +145,25 @@ const AdminShopOrders = () => {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="ghost" className="h-9 px-2" onClick={() => { refreshAlerts(); load(); }} title="Refresh now">
+            {unread > 0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-9 gap-1.5"
+                onClick={() => { markAllSeen(); toast.success('Marked all as seen'); }}
+                title="Mark all as seen"
+              >
+                <CheckCheck className="h-4 w-4" />
+                <span className="hidden sm:inline">Mark all seen</span>
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-9 px-2"
+              onClick={() => { markAllSeen(); refreshAlerts(); load(); }}
+              title="Refresh now (also marks as seen)"
+            >
               <Loader2 className={'h-4 w-4 ' + (status === 'loading' ? 'animate-spin' : '')} />
             </Button>
             <Select value={filter} onValueChange={setFilter}>
