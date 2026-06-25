@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ShoppingBag, Phone, Mail, MessageCircle, Loader2, Send } from 'lucide-react';
+import { ShoppingBag, Phone, Mail, MessageCircle, Loader2, Send, BellRing, CheckCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -40,7 +40,7 @@ const AdminShopOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
-  const { markAllSeen, status, lastUpdatedAt, refresh: refreshAlerts } = useShopOrderAlerts(true);
+  const { unread, markAllSeen, status, lastUpdatedAt, refresh: refreshAlerts } = useShopOrderAlerts(true);
 
   const load = async () => {
     setLoading(true);
@@ -51,7 +51,8 @@ const AdminShopOrders = () => {
   };
 
   useEffect(() => { load(); }, [filter]);
-  useEffect(() => { markAllSeen(); }, [markAllSeen, orders.length]);
+  // Note: we intentionally do NOT auto-mark as seen on load — the badge stays
+  // visible until the admin explicitly refreshes or clicks "Mark all as seen".
 
   // Poll for updates — shop_orders is no longer in the realtime publication.
   useEffect(() => {
