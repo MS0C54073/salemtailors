@@ -39,11 +39,19 @@ const AdminSlots = () => {
   });
 
   const fetchSlots = async () => {
-    const { data } = await supabase
+    // Notes are column-restricted; use the secure RPC that returns notes only to
+    // staff/owners. Falls back to the column-safe view for non-eligible rows.
+    const { data: withNotes } = await supabase.rpc('get_appointment_slots_with_notes');
+    const { data: base } = await supabase
       .from('appointment_slots')
-      .select('*')
+      .select('id, slot_at, duration_minutes, is_available, booked_by, appointment_id, created_by, created_at, updated_at')
       .order('slot_at', { ascending: true });
-    const list = data || [];
+    const notesMap = new Map<string, string | null>(
+      (withNotes || []).map((s: any) => [s.id, s.notes ?? null])
+    );
+    const list = (base || [])
+      .map(s => ({ ...s, notes: notesMap.get(s.id) ?? null }))
+      .sort((a, b) => new Date(a.slot_at).getTime() - new Date(b.slot_at).getTime());
     setSlots(list);
 
     // Resolve booker names
