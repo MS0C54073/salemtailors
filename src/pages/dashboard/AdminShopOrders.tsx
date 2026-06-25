@@ -40,7 +40,7 @@ const AdminShopOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
-  const { markAllSeen } = useShopOrderAlerts(true);
+  const { markAllSeen, status, lastUpdatedAt, refresh: refreshAlerts } = useShopOrderAlerts(true);
 
   const load = async () => {
     setLoading(true);
