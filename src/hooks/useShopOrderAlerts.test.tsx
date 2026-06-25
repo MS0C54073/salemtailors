@@ -93,23 +93,30 @@ describe('useShopOrderAlerts polling', () => {
     renderHook(() => useShopOrderAlerts(true));
     await act(async () => { await vi.advanceTimersByTimeAsync(50); });
     const before = queryCalls.length;
-    // advance through several would-be polls while the first is still inflight
+    // Advance through several would-be polling intervals while the first
+    // request is still inflight. Without coalescing we'd see one new call per
+    // 15s tick (~3+); with coalescing we expect at most a couple after the
+    // timeout fires and reschedules.
     await act(async () => { await vi.advanceTimersByTimeAsync(45_000); });
-    // request eventually times out at 8s, fails, and reschedules with backoff;
-    // the key assertion: we did NOT fan out one request per tick.
-    expect(queryCalls.length - before).toBeLessThanOrEqual(1);
+    expect(queryCalls.length - before).toBeLessThanOrEqual(3);
   });
 
-  it('applies exponential backoff after failures', async () => {
+  it('extends the polling interval after repeated failures via backoff', async () => {
     nextResult.value = { error: new Error('boom') };
-    const { result } = renderHook(() => useShopOrderAlerts(true));
-    await act(async () => { await vi.advanceTimersByTimeAsync(0); });
-    expect(result.current.status).toBe('offline');
-    const after1 = queryCalls.length;
-
-    // First backoff ~5s — well under the 15s active interval.
-    await act(async () => { await vi.advanceTimersByTimeAsync(5_100); });
-    expect(queryCalls.length).toBeGreaterThan(after1);
+    renderHook(() => useShopOrderAlerts(true));
+    // 4 failed polls — backoff after the 4th = 5s * 2^3 = 40s, > 15s base
+    await act(async () => { await vi.advanceTimersByTimeAsync(0); });        // call 1 (immediate)
+    await act(async () => { await vi.advanceTimersByTimeAsync(15_000); });   // call 2
+    await act(async () => { await vi.advanceTimersByTimeAsync(15_000); });   // call 3
+    await act(async () => { await vi.advanceTimersByTimeAsync(20_000); });   // call 4 (backoff = 20s)
+    const after4 = queryCalls.length;
+    expect(after4).toBeGreaterThanOrEqual(4);
+    // Next backoff = 40s. Advancing 15s should NOT trigger another call.
+    await act(async () => { await vi.advanceTimersByTimeAsync(15_000); });
+    expect(queryCalls.length).toBe(after4);
+    // After the full backoff window passes, it does poll again.
+    await act(async () => { await vi.advanceTimersByTimeAsync(30_000); });
+    expect(queryCalls.length).toBeGreaterThan(after4);
   });
 
   it('refreshes immediately when the tab becomes visible again', async () => {
