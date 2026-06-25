@@ -53,13 +53,10 @@ const AdminShopOrders = () => {
   useEffect(() => { load(); }, [filter]);
   useEffect(() => { markAllSeen(); }, [markAllSeen, orders.length]);
 
-  // Live refresh on new/updated orders
+  // Poll for updates — shop_orders is no longer in the realtime publication.
   useEffect(() => {
-    const ch = supabase
-      .channel('shop-orders-page')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_orders' }, () => load())
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    const interval = window.setInterval(() => { load(); }, 20000);
+    return () => { window.clearInterval(interval); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
