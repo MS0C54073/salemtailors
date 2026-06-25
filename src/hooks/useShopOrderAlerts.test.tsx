@@ -85,7 +85,7 @@ describe('useShopOrderAlerts polling', () => {
     delayNextMs = 20_000; // never resolves within timeout
     const { result } = renderHook(() => useShopOrderAlerts(true));
     await act(async () => { await vi.advanceTimersByTimeAsync(8_100); });
-    await waitFor(() => expect(result.current.status).toBe('offline'));
+    expect(result.current.status).toBe('offline');
   });
 
   it('coalesces overlapping polls so a slow request does not pile up calls', async () => {
