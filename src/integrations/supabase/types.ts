@@ -721,6 +721,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_appointment_slots_with_notes: {
+        Args: never
+        Returns: {
+          appointment_id: string | null
+          booked_by: string | null
+          created_at: string
+          created_by: string | null
+          duration_minutes: number
+          id: string
+          is_available: boolean
+          notes: string | null
+          slot_at: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "appointment_slots"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_member_discount: { Args: never; Returns: number }
       get_user_role: {
         Args: { _user_id: string }
