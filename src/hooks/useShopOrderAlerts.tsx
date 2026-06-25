@@ -37,15 +37,40 @@ const notify = (title: string, body: string) => {
 export const useShopOrderAlerts = (enabled: boolean) => {
   const [unread, setUnread] = useState(0);
   const lastSeenRef = useRef<number>(getLastSeen());
+  const knownIdsRef = useRef<Set<string>>(new Set());
+  const primedRef = useRef(false);
 
   const refresh = useCallback(async () => {
     if (!enabled) return;
     const since = new Date(lastSeenRef.current || 0).toISOString();
-    const { count } = await supabase
+    const { data, count } = await supabase
       .from('shop_orders')
-      .select('id', { count: 'exact', head: true })
-      .gt('created_at', since);
+      .select('id, customer_name, currency, subtotal, created_at', { count: 'exact' })
+      .gt('created_at', since)
+      .order('created_at', { ascending: false })
+      .limit(50);
     setUnread(count || 0);
+
+    // Surface a toast/chime for orders we haven't seen during this session.
+    if (primedRef.current && data?.length) {
+      for (const row of data) {
+        if (knownIdsRef.current.has(row.id)) continue;
+        knownIdsRef.current.add(row.id);
+        playChime();
+        toast.success('New shop order!', {
+          description: `${row.customer_name || 'Customer'} • ${row.currency || 'ZMW'} ${Number(row.subtotal || 0).toLocaleString()}`,
+          duration: 8000,
+          action: {
+            label: 'View',
+            onClick: () => { window.location.href = '/dashboard/admin/shop-orders'; },
+          },
+        });
+        notify('New shop order', `${row.customer_name || 'Customer'} placed an order`);
+      }
+    } else if (data?.length) {
+      data.forEach(r => knownIdsRef.current.add(r.id));
+    }
+    primedRef.current = true;
   }, [enabled]);
 
   const markAllSeen = useCallback(() => {
@@ -63,27 +88,10 @@ export const useShopOrderAlerts = (enabled: boolean) => {
       Notification.requestPermission().catch(() => {});
     }
 
-    const channel = supabase
-      .channel('shop-orders-alerts')
-      .on('postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'shop_orders' },
-        (payload) => {
-          const row: any = payload.new;
-          setUnread((u) => u + 1);
-          playChime();
-          toast.success('New shop order!', {
-            description: `${row?.customer_name || 'Customer'} • ${row?.currency || 'ZMW'} ${Number(row?.subtotal || 0).toLocaleString()}`,
-            duration: 8000,
-            action: {
-              label: 'View',
-              onClick: () => { window.location.href = '/dashboard/admin/shop-orders'; },
-            },
-          });
-          notify('New shop order', `${row?.customer_name || 'Customer'} placed an order`);
-        })
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
+    // Poll instead of subscribing to realtime — shop_orders is no longer in the
+    // realtime publication so order data isn't broadcast to other tabs.
+    const interval = window.setInterval(() => { refresh(); }, 20000);
+    return () => { window.clearInterval(interval); };
   }, [enabled, refresh]);
 
   return { unread, markAllSeen, refresh };
