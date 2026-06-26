@@ -13,6 +13,8 @@ on:
 
 permissions:
   contents: write
+  # Required for cosign keyless signing via GitHub's OIDC token.
+  id-token: write
 
 jobs:
   sbom:
