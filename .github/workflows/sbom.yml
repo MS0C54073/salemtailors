@@ -94,6 +94,33 @@ jobs:
         working-directory: sbom
         run: sha256sum * > SHA256SUMS.txt
 
+      # Keyless signing with Sigstore cosign. No long-lived keys: cosign
+      # exchanges the workflow's OIDC token for a short-lived Fulcio cert,
+      # signs each SBOM, and records the signature in the public Rekor
+      # transparency log. Verifiers don't need any pre-shared key.
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+        with:
+          cosign-release: v2.4.1
+
+      - name: Sign SBOM artifacts (keyless via Sigstore)
+        working-directory: sbom
+        env:
+          COSIGN_YES: "true"
+        run: |
+          shopt -s nullglob
+          for f in *.cdx.json *.cdx.xml *.spdx.json manifest.json SHA256SUMS.txt; do
+            [ -f "$f" ] || continue
+            echo "Signing $f"
+            cosign sign-blob \
+              --yes \
+              --output-signature "${f}.sig" \
+              --output-certificate "${f}.pem" \
+              "$f"
+          done
+          # Refresh checksums so signatures are covered too.
+          sha256sum * > SHA256SUMS.txt
+
       - name: Upload SBOM as workflow artifact (90-day retention)
         uses: actions/upload-artifact@v4
         with:
@@ -102,11 +129,14 @@ jobs:
           retention-days: 90
           if-no-files-found: error
 
-      - name: Attach SBOM to GitHub Release
+      - name: Attach SBOM + signatures to GitHub Release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
           files: |
             sbom/*.json
             sbom/*.xml
+            sbom/*.sig
+            sbom/*.pem
             sbom/SHA256SUMS.txt
+
