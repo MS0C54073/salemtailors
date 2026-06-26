@@ -1,0 +1,110 @@
+name: Generate SBOM
+
+# Builds a CycloneDX Software Bill of Materials for every release (and on demand)
+# so we can trace exactly which dependency versions shipped to production.
+
+on:
+  release:
+    types: [published]
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sbom:
+    name: Build & publish SBOM
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies (frozen lockfile)
+        run: bun install --frozen-lockfile
+
+      - name: Resolve release metadata
+        id: meta
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          if [ -z "$VERSION" ] || [ "$VERSION" = "main" ]; then
+            VERSION="$(node -p "require('./package.json').version")"
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "sha=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+          echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+
+      # CycloneDX npm tool reads the installed node_modules tree and produces a
+      # complete SBOM (transitive deps, licenses, hashes, purls).
+      - name: Generate CycloneDX SBOM (JSON)
+        run: |
+          mkdir -p sbom
+          npx --yes @cyclonedx/cyclonedx-npm@latest \
+            --output-format JSON \
+            --output-file sbom/salem-tailors-${{ steps.meta.outputs.version }}.cdx.json \
+            --spec-version 1.5 \
+            --omit dev
+
+      - name: Generate CycloneDX SBOM (XML)
+        run: |
+          npx --yes @cyclonedx/cyclonedx-npm@latest \
+            --output-format XML \
+            --output-file sbom/salem-tailors-${{ steps.meta.outputs.version }}.cdx.xml \
+            --spec-version 1.5 \
+            --omit dev
+
+      # SPDX is the second widely-accepted SBOM standard (required by some
+      # downstream compliance tooling). Syft handles it cleanly.
+      - name: Generate SPDX SBOM via Syft
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: spdx-json
+          output-file: sbom/salem-tailors-${{ steps.meta.outputs.version }}.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
+
+      - name: Write release manifest
+        run: |
+          cat > sbom/manifest.json <<EOF
+          {
+            "project": "salem-tailors",
+            "version": "${{ steps.meta.outputs.version }}",
+            "commit": "${{ steps.meta.outputs.sha }}",
+            "generated_at": "${{ steps.meta.outputs.timestamp }}",
+            "artifacts": [
+              "salem-tailors-${{ steps.meta.outputs.version }}.cdx.json",
+              "salem-tailors-${{ steps.meta.outputs.version }}.cdx.xml",
+              "salem-tailors-${{ steps.meta.outputs.version }}.spdx.json"
+            ]
+          }
+          EOF
+
+      - name: Compute SHA-256 checksums
+        working-directory: sbom
+        run: sha256sum * > SHA256SUMS.txt
+
+      - name: Upload SBOM as workflow artifact (90-day retention)
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ steps.meta.outputs.version }}
+          path: sbom/
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Attach SBOM to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            sbom/*.json
+            sbom/*.xml
+            sbom/SHA256SUMS.txt
