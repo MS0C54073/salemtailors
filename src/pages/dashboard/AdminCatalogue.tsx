@@ -334,6 +334,12 @@ const AdminCatalogue = () => {
             <DialogTitle className="font-serif">{form.id ? 'Edit Item' : 'New Item'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {saveError && (
+              <div className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-2 text-xs text-destructive">
+                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                <span>{saveError}</span>
+              </div>
+            )}
             {/* Primary image */}
             <div>
               <Label>Primary image *</Label>
