@@ -57,34 +57,63 @@ const AdminCatalogue = () => {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(emptyForm());
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const load = async () => {
-    const [{ data: it }, { data: cat }] = await Promise.all([
-      supabase.from('catalogue_items').select('*').order('display_order').order('created_at', { ascending: false }),
-      supabase.from('catalogue_categories').select('*').eq('is_active', true).order('display_order'),
-    ]);
-    setItems((it as Item[]) || []);
-    setCategories((cat as Category[]) || []);
+  const load = async (reset = true) => {
+    setLoading(true);
+    const nextPage = reset ? 0 : page + 1;
+    const from = nextPage * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    try {
+      const [itemsRes, catRes] = await Promise.all([
+        supabase
+          .from('catalogue_items')
+          .select('*')
+          .order('display_order')
+          .order('created_at', { ascending: false })
+          .range(from, to),
+        reset
+          ? supabase.from('catalogue_categories').select('*').eq('is_active', true).order('display_order')
+          : Promise.resolve({ data: null, error: null } as const),
+      ]);
+      if (itemsRes.error) throw itemsRes.error;
+      const rows = (itemsRes.data as Item[]) || [];
+      setItems(prev => (reset ? rows : [...prev, ...rows]));
+      setHasMore(rows.length === PAGE_SIZE);
+      setPage(nextPage);
+      if (reset && catRes.data) setCategories(catRes.data as Category[]);
+    } catch (err: any) {
+      logger.error('Catalogue load failed', { message: err?.message });
+      toast.error(`Could not load catalogue: ${err?.message || 'network error'}`);
+    } finally {
+      setLoading(false);
+    }
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(true); }, []);
 
-  const uploadFile = async (file: File): Promise<string | null> => {
-    if (file.size > 15 * 1024 * 1024) {
-      toast.error(`${file.name} is over 15MB. Please use a smaller image.`);
+  const uploadFile = async (rawFile: File): Promise<string | null> => {
+    if (!rawFile.type.startsWith('image/')) {
+      toast.error(`${rawFile.name} is not an image.`);
       return null;
     }
-    if (!file.type.startsWith('image/')) {
-      toast.error(`${file.name} is not an image.`);
+    if (rawFile.size > 20 * 1024 * 1024) {
+      toast.error(`${rawFile.name} is over 20MB. Please use a smaller image.`);
       return null;
     }
-    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+    // Downscale huge phone photos before upload — critical on 3G/4G.
+    const file = await compressImage(rawFile);
+    const ext = 'jpg';
     const path = `items/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
     const { error } = await supabase.storage.from('catalogue').upload(path, file, {
       cacheControl: '3600',
-      contentType: file.type,
+      contentType: file.type || 'image/jpeg',
       upsert: false,
     });
     if (error) {
+      logger.error('Storage upload failed', { path, message: error.message });
       toast.error(`Upload failed: ${error.message}`);
       return null;
     }
