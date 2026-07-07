@@ -1,499 +1,221 @@
-# Salem Tailors — Digital Shop Management System
+# Salem Tailors Lusaka
 
-My parents are both tailors, and for years I watched them run their business using notebooks, paper records, and handwritten measurements. While their craftsmanship was exceptional, managing customers, orders, appointments, and finances manually often took valuable time away from the work they loved. Wanting to make their daily operations easier, I decided to build a simple digital solution for them.
+Digital shop-management platform for Salem Tailors, Lusaka. Replaces manual paper flows with an online catalogue, appointment booking, order tracking, real-time client chat, and staff dashboards — designed mobile-first and optimised for low-bandwidth Zambian networks.
 
-Salem Tailors is a web based management system created to help modernize and simplify the operations of a tailoring business. The platform brings customer records, measurement profiles, order tracking, appointments, financial management, product catalogues, and customer communication into one centralized system that is accessible from mobile devices and designed to work well even in low connectivity environments.
-
-What began as a personal project for my parents has grown into a platform with the potential to support tailoring businesses of different sizes. The current system provides a strong foundation, and there are plans to introduce many more features in the future, including advanced reporting, inventory management, mobile notifications, analytics, online payments, and other tools that will further improve efficiency and customer experience.
-
-This project is a reflection of how technology can be used to solve real problems, inspired by the people who inspired me to build in the first place.
-
-**Live URLs**
-- Production: https://salemtailors.app
-## Table of Contents
-
-1. [Tech Stack](#tech-stack)
-2. [Key Features](#key-features)
-3. [User Roles](#user-roles)
-4. [Architecture (UML Component Diagram)](#architecture-uml-component-diagram)
-5. [Database Schema (ERM Diagram)](#database-schema-erm-diagram)
-6. [Key Workflow (Sequence Diagram)](#key-workflow-sequence-diagram)
-7. [Use Cases](#use-cases)
-8. [Local Development](#local-development)
-9. [Project Structure](#project-structure)
-10. [Deployment](#deployment)
+Live: <https://salemtailors.lovable.app>
 
 ---
 
-## Tech Stack
+## Contents
 
-| Layer            | Technology                                                  |
-| ---------------- | ----------------------------------------------------------- |
-| Frontend         | React 18, Vite 5, TypeScript 5                              |
-| Styling          | Tailwind CSS v3 + shadcn/ui (semantic HSL design tokens)    |
-| Routing / State  | react-router-dom v6, @tanstack/react-query                  |
-| Forms / Validation | react-hook-form + Zod                                     |
-| Backend (BaaS)   | Supabase Cloud (Postgres, Auth, Storage, RLS, Edge Functions) |
-| Realtime         | Supabase Realtime (Postgres changes for messages)           |
-| Notifications    | Email + WhatsApp deep-links (manual click from admin)       |
-| Hosting          | Cloud hosting (auto-deploys on each change)                 |
-
----
-
-## Key Features
-
-### Public site
-- Landing page with portfolio highlights and CTAs
-- **Product Catalogue** — browse bags, caps, fabrics, and merchandise with images, variants (size/color), and stock status
-- Catalogue item detail page with inquiry-by-chat or WhatsApp
-- **Cart & WhatsApp checkout** — guests or signed-in clients can add to cart (stored locally); orders are saved in the database first, then a WhatsApp deep-link is opened to the shop with the order summary
-- **Order tracking** at `/track` — customers enter their phone number to view real-time status updates without signing in
-- Booking page for first-time consultation requests
-- Password recovery via email (`/forgot-password` → `/reset-password`)
-
-### Client dashboard
-- Order request submission with reference images and preferences
-- 8-stage order tracking (request → completed/ready for pickup)
-- **Measurement profiles** with separate male / female / child templates
-- Appointment self-booking against staff-published slots
-- Real-time chat with assigned staff
-- Tier badge (Regular / Member) with discount visibility
-
-### Admin / Staff dashboard
-- **Customer management** — search, filter by tier/source, CSV export, promote to Member
-- **Orders** — auto-detects member tier by phone, applies member discount + priority badge
-- **Catalogue management** — categories, items, variants, multi-image upload (cloud storage), draft/active/sold-out states
-- **Shop Orders** — view WhatsApp cart orders with realtime new-order toast + chime, unread badge on nav, and **Resend WhatsApp** action to re-open the deep-link
-- **Appointments & Slots** — publish availability, confirm bookings
-- **Finance** — payments, expenses, deposit/balance tracking
-- **Portfolio** — featured work gallery
-- **Staff Management** — Super Admin creates staff via Edge Function
-- **Settings** — member discount %, notification email/WhatsApp number
-- Real-time chat panel with all clients
-
-### Cross-cutting
-- Row-Level Security on every table, with `is_staff()` and `has_role()` security-definer functions
-- Strict mobile-first responsive layout with overflow "More" sheet for staff nav
-- Persistent back navigation across all dashboard routes
-- SEO baseline: per-route `<Seo>` component, sitemap.xml, robots.txt, llms.txt, JSON-LD organization schema
+- [What's in the box](#whats-in-the-box)
+- [Architecture](#architecture)
+- [Local development](#local-development)
+- [Environment](#environment)
+- [Production checklist](#production-checklist)
+- [Operations runbook](#operations-runbook)
+- [Scaling notes](#scaling-notes)
+- [Supply-chain security](#supply-chain-security)
+- [Testing & CI](#testing--ci)
+- [Security memory](#security-memory)
 
 ---
 
-## User Roles
+## What's in the box
 
-Four roles are stored in a separate `user_roles` table (never on `profiles`) to prevent privilege escalation:
-
-| Role          | Capabilities                                                              |
-| ------------- | ------------------------------------------------------------------------- |
-| `super_admin` | Everything + create/remove staff accounts, manage roles                   |
-| `admin`       | All operational features (customers, orders, catalogue, finance, settings) |
-| `sub_admin`   | Sees only requests assigned to them; can chat and update status           |
-| `client`      | Own profile, measurements, orders, appointments, chat                     |
-
-Permission checks use the SQL function `has_role(_user_id, _role)` (SECURITY DEFINER) inside RLS policies to avoid recursion.
+- **Public site** — landing page, catalogue, product detail, order tracking, booking.
+- **Client dashboard** — orders, appointments, real-time chat with the tailor, profile & measurements.
+- **Admin/staff dashboard** — orders, shop orders, appointments and slots, customers, portfolio, catalogue CMS, staff management, finance, messaging.
+- **Roles** — `super_admin`, `admin`, `sub_admin`, `client` (see `mem://auth/role-hierarchy`).
 
 ---
 
-## Architecture (UML Component Diagram)
+## Architecture
 
-```mermaid
-graph TB
-    subgraph Browser["Browser - React SPA"]
-        Public["Public Pages<br/>Index, Catalogue, Book"]
-        Auth["Auth<br/>Sign in / Register"]
-        ClientDash["Client Dashboard<br/>Orders, Profile, Chat"]
-        AdminDash["Admin Dashboard<br/>Customers, Orders,<br/>Catalogue, Finance"]
-        Shared["Shared UI<br/>shadcn/ui + Tailwind"]
-    end
-
-    subgraph Cloud["Supabase Cloud"]
-        SupaAuth["Auth<br/>JWT + Email"]
-        Postgres[("Postgres<br/>+ RLS Policies")]
-        Storage["Storage<br/>catalogue, references"]
-        Realtime["Realtime<br/>postgres_changes"]
-        Edge["Edge Functions<br/>create-staff"]
-    end
-
-    subgraph External["External Channels"]
-        WA["WhatsApp<br/>deep links"]
-        Email["Email<br/>notifications"]
-    end
-
-    Public --> SupaAuth
-    Auth --> SupaAuth
-    ClientDash --> SupaAuth
-    AdminDash --> SupaAuth
-    ClientDash --> Postgres
-    AdminDash --> Postgres
-    AdminDash --> Storage
-    Public --> Storage
-    ClientDash --> Realtime
-    AdminDash --> Realtime
-    AdminDash --> Edge
-    Edge --> SupaAuth
-    AdminDash --> WA
-    AdminDash --> Email
-    Shared -.-> Public
-    Shared -.-> ClientDash
-    Shared -.-> AdminDash
+```text
+   Browser (React 18 + Vite 5 + TS + Tailwind + shadcn)
+                       │
+                       │  HTTPS (JWT via Supabase Auth)
+                       ▼
+          Lovable Cloud (managed Supabase)
+          ├── Postgres  (RLS everywhere)
+          ├── Auth      (email + Google OAuth)
+          ├── Storage   (portfolio, catalogue, booking-images, garment-images)
+          └── Edge Fns  (staff provisioning, admin ops)
 ```
 
----
+Key modules:
 
-## Database Schema (ERM Diagram)
-
-```mermaid
-erDiagram
-    profiles ||--o{ user_roles : "has"
-    profiles ||--o{ customer_measurements : "owns"
-    profiles ||--o{ garment_requests : "submits"
-    profiles ||--o{ appointments : "books"
-    profiles ||--o{ messages : "sends/receives"
-    customers ||--o{ customer_measurements : "has"
-    customers ||--o{ garment_requests : "linked to"
-    customers ||--o{ payments : "pays"
-    garment_requests ||--o{ appointments : "schedules"
-    garment_requests ||--o{ messages : "discussed in"
-    garment_requests ||--o{ payments : "billed"
-    catalogue_categories ||--o{ catalogue_items : "groups"
-    catalogue_items ||--o{ catalogue_item_images : "has"
-    catalogue_items ||--o{ catalogue_item_variants : "offers"
-    appointment_slots }o--|| profiles : "booked by"
-
-    profiles {
-        uuid user_id PK
-        text full_name
-        text phone
-        text email
-        enum tier "regular|member"
-        timestamptz tier_since
-    }
-    user_roles {
-        uuid user_id FK
-        enum role "super_admin|admin|sub_admin|client"
-    }
-    customers {
-        uuid id PK
-        text full_name
-        text phone
-        enum tier
-        jsonb measurements
-    }
-    customer_measurements {
-        uuid id PK
-        uuid profile_user_id FK
-        uuid customer_id FK
-        enum template "male|female|child"
-        jsonb measurements
-    }
-    garment_requests {
-        uuid id PK
-        uuid client_id FK
-        uuid customer_id FK
-        uuid assigned_to FK
-        enum category
-        enum status "8 stages"
-        enum payment_status
-        numeric total_price
-        numeric discount_percent
-        bool is_member_priority
-    }
-    appointments {
-        uuid id PK
-        uuid client_id FK
-        uuid garment_request_id FK
-        enum appointment_type
-        enum status
-        timestamptz scheduled_at
-    }
-    appointment_slots {
-        uuid id PK
-        timestamptz slot_at
-        bool is_available
-        uuid booked_by FK
-    }
-    payments {
-        uuid id PK
-        uuid garment_request_id FK
-        numeric amount
-        enum payment_type
-    }
-    messages {
-        uuid id PK
-        uuid sender_id FK
-        uuid receiver_id FK
-        uuid garment_request_id FK
-        text content
-        bool is_read
-    }
-    catalogue_categories {
-        uuid id PK
-        text name
-        text slug
-    }
-    catalogue_items {
-        uuid id PK
-        uuid category_id FK
-        text name
-        numeric base_price
-        enum status
-        enum stock_status
-    }
-    catalogue_item_images {
-        uuid id PK
-        uuid item_id FK
-        text image_url
-    }
-    catalogue_item_variants {
-        uuid id PK
-        uuid item_id FK
-        text name
-        enum stock_status
-    }
-    app_settings {
-        uuid id PK
-        numeric member_discount_percent
-        bool member_priority_enabled
-    }
-```
+- `src/App.tsx` — router; all non-landing routes are lazy-loaded to keep the initial JS budget small on 3G.
+- `src/components/ErrorBoundary.tsx` — top-level crash guard with reload-and-recover.
+- `src/lib/logger.ts` — pluggable logger (console + localStorage ring buffer in prod; Sentry drop-in point).
+- `src/lib/queryClient.ts` — TanStack Query defaults tuned for lossy mobile networks.
+- `src/lib/imageCompress.ts` — client-side image downscale before upload.
+- `supabase/migrations/*.sql` — every schema change; `upsert_catalogue_item` is the atomic save RPC for the catalogue admin.
 
 ---
 
-## Key Workflow (Sequence Diagram)
+## Local development
 
-End-to-end flow from a client placing an order to staff fulfilment.
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Client
-    participant Web as React App
-    participant Auth as Cloud Auth
-    participant DB as Postgres + RLS
-    participant RT as Realtime
-    actor Staff as Admin/Sub-Admin
-
-    Client->>Web: Register (full name, phone, email)
-    Web->>Auth: signUp + metadata
-    Auth-->>DB: trigger creates profile (tier=regular)
-    Client->>Web: Submit garment request + images
-    Web->>DB: INSERT garment_requests
-    DB-->>RT: postgres_changes
-    RT-->>Staff: New order notification
-
-    Staff->>Web: Open order, detect tier by phone
-    Web->>DB: SELECT profile/customer by phone
-    DB-->>Web: tier=member ? apply discount + priority
-    Staff->>Web: Publish appointment slot
-    Web->>DB: INSERT appointment_slots
-
-    Client->>Web: Book slot
-    Web->>DB: UPDATE slot.booked_by = client
-    Web->>DB: INSERT appointments
-
-    Client->>Web: Send chat message
-    Web->>DB: INSERT messages
-    DB-->>RT: postgres_changes
-    RT-->>Staff: New message
-
-    Staff->>Web: Update status (in_progress, fitting, ready)
-    Web->>DB: UPDATE garment_requests.status
-    DB-->>RT: postgres_changes
-    RT-->>Client: Status update
-
-    Staff->>Web: Record payment
-    Web->>DB: INSERT payments
-    Staff->>Web: Click WhatsApp/Email notify
-    Web->>Client: External "ready for pickup" message
+```bash
+bun install
+bun run dev          # http://localhost:8080
+bun run lint
+bunx tsc --noEmit    # typecheck
+bunx vitest run      # tests
+bun run build        # production bundle
 ```
+
+Node 20 pinned in CI. Bun is the local package manager; the lockfile is `bun.lock`.
 
 ---
 
-## Use Cases
+## Environment
 
-```mermaid
-graph LR
-    Visitor((Visitor))
-    Client((Client))
-    SubAdmin((Sub-Admin))
-    Admin((Admin))
-    SuperAdmin((Super Admin))
+Lovable Cloud injects these automatically in the sandbox and production build. Do not commit real values.
 
-    subgraph System["Salem Tailors System"]
-        UC1[Browse catalogue]
-        UC2[Inquire about item]
-        UC3[Register / Sign in]
-        UC4[Submit garment request]
-        UC5[Manage measurement profile]
-        UC6[Book appointment]
-        UC7[Chat with staff]
-        UC8[View order status]
-        UC9[Manage assigned orders]
-        UC10[Update order status]
-        UC11[Manage all customers]
-        UC12[Promote to Member]
-        UC13[Manage catalogue & stock]
-        UC14[Publish appointment slots]
-        UC15[Record payments & expenses]
-        UC16[Configure member discount]
-        UC17[Create staff accounts]
-        UC18[Manage roles]
-    end
+| Var                            | Where               | Purpose                                    |
+| ------------------------------ | ------------------- | ------------------------------------------ |
+| `VITE_SUPABASE_URL`            | client + edge       | Backend URL                                |
+| `VITE_SUPABASE_PUBLISHABLE_KEY`| client              | Public anon key (safe in bundle)           |
+| `SUPABASE_SERVICE_ROLE_KEY`    | edge functions only | Server-side privileged operations          |
+| `LOVABLE_API_KEY`              | edge functions      | Lovable AI gateway auth                    |
 
-    Visitor --> UC1
-    Visitor --> UC2
-    Visitor --> UC3
-
-    Client --> UC4
-    Client --> UC5
-    Client --> UC6
-    Client --> UC7
-    Client --> UC8
-    Client --> UC1
-
-    SubAdmin --> UC9
-    SubAdmin --> UC10
-    SubAdmin --> UC7
-
-    Admin --> UC9
-    Admin --> UC10
-    Admin --> UC11
-    Admin --> UC12
-    Admin --> UC13
-    Admin --> UC14
-    Admin --> UC15
-    Admin --> UC16
-    Admin --> UC7
-
-    SuperAdmin --> UC17
-    SuperAdmin --> UC18
-    SuperAdmin -.inherits.-> Admin
-```
+`SUPABASE_SERVICE_ROLE_KEY` and DB password are **inaccessible on Lovable Cloud** — never log them, never return them from an edge function, never write them into client code.
 
 ---
 
-## Local Development
+## Production checklist
 
-Requirements: Node.js 18+ and npm (or bun).
+Run through this **before every release**.
 
-```sh
-# 1. Clone
-git clone <YOUR_GIT_URL>
-cd salem-tailors
-
-# 2. Install
-npm install        # or: bun install
-
-# 3. Run dev server (Vite, port 8080)
-npm run dev        # or: bun run dev
-```
-
-Environment variables (`.env`) are auto-managed by the cloud provider:
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_PUBLISHABLE_KEY`
-- `VITE_SUPABASE_PROJECT_ID`
-
-> **Do not edit** `.env`, `src/integrations/supabase/client.ts`, `src/integrations/supabase/types.ts`, or files under `supabase/migrations/`. They are regenerated automatically.
-
-### Useful commands
-
-```sh
-npm run build       # production bundle
-npm run lint        # ESLint
-bunx vitest run     # run unit tests (src/test/)
-```
+- [ ] `bun run lint`, `bunx tsc --noEmit`, `bunx vitest run`, `bun run build` all green locally
+- [ ] CI green (`.github/workflows/ci.yml`)
+- [ ] Latest security scan has **zero unresolved critical findings** (see `mem://security/security-memory`)
+- [ ] All new tables have `GRANT` statements and RLS policies in the same migration
+- [ ] No SECURITY DEFINER function is callable without an `is_staff()` / `auth.uid()` check
+- [ ] Google OAuth provider configured in Lovable Cloud → Auth (else first sign-in errors "Unsupported provider")
+- [ ] `redirect_uri` for OAuth points to `window.location.origin`, not a protected route
+- [ ] Storage buckets: `catalogue`, `portfolio` public; `booking-images`, `garment-images` private with RLS
+- [ ] SBOM workflow (`.github/workflows/sbom.yml`) has run on the release tag and produced signed artifacts
+- [ ] `README.md`, `docs/sbom.md`, security memory reflect what actually ships
+- [ ] `index.html` `<title>`, meta description, OG/Twitter tags are the current, correct copy
+- [ ] Manual smoke test: sign in as client → book slot → place shop order → track order; sign in as admin → open catalogue → edit an item → verify images/variants intact after save
 
 ---
 
-## Project Structure
+## Operations runbook
 
-```
-src/
-├── components/
-│   ├── DashboardLayout.tsx        # responsive nav + "More" sheet
-│   ├── ProtectedRoute.tsx         # role-aware route guard
-│   └── ui/                        # shadcn/ui primitives
-├── hooks/
-│   └── useAuth.tsx                # session + role hook
-├── integrations/supabase/         # auto-generated client + types
-├── lib/
-│   ├── measurements.ts            # male/female/child templates
-│   ├── csv-export.ts
-│   └── supabase-helpers.ts
-├── pages/
-│   ├── Index.tsx                  # landing
-│   ├── Auth.tsx                   # sign in / register (Zod)
-│   ├── Catalogue.tsx              # public shop
-│   ├── CatalogueItem.tsx          # product detail + inquiry
-│   ├── Book.tsx                   # consultation booking
-│   └── dashboard/
-│       ├── ClientDashboard.tsx
-│       ├── ClientProfile.tsx      # measurements
-│       ├── ClientOrders.tsx
-│       ├── ClientAppointments.tsx
-│       ├── AdminDashboard.tsx
-│       ├── AdminCustomers.tsx     # tier mgmt + CSV export
-│       ├── AdminOrders.tsx        # auto member discount
-│       ├── AdminCatalogue.tsx
-│       ├── AdminAppointments.tsx
-│       ├── AdminSlots.tsx
-│       ├── AdminFinance.tsx
-│       ├── AdminPortfolio.tsx
-│       ├── StaffManagement.tsx    # super_admin only
-│       ├── Settings.tsx
-│       └── Messages.tsx           # realtime chat
-└── index.css                      # HSL design tokens
+Playbooks for the on-call operator. Keep this section short and factual.
 
-supabase/
-├── config.toml
-├── migrations/                    # auto-generated
-└── functions/
-    └── create-staff/              # Edge Function for staff onboarding
+### Incident: site is down
+
+1. Check <https://status.lovable.dev> and the Lovable Cloud project status.
+2. If Cloud is healthy, check the browser preview and the console for a red banner. Take a screenshot.
+3. Pull the last 50 in-browser log entries via DevTools:
+   ```js
+   copy(localStorage.getItem('salem-logs'))
+   ```
+4. Roll back by re-publishing the previous good commit from the Lovable dashboard.
+
+### Incident: catalogue update crashed / images disappeared
+
+The catalogue save is now **atomic** — `upsert_catalogue_item` commits item, gallery, and variants in a single Postgres transaction. If a save fails, the previous state is preserved. Ask the user to reload; their data is intact. If the RPC itself failed, the dialog stays open with the error inline — copy that message and open a ticket.
+
+### Rotating the anon (publishable) key
+
+Anon keys are safe in client bundles but rotate them if a workspace leak is suspected.
+
+1. Lovable dashboard → Cloud → API keys → Rotate publishable key.
+2. Republish the frontend to pick up the new key.
+3. Old key becomes invalid within a minute.
+
+The **service role key** and DB password are managed by Lovable Cloud and cannot be fetched. Contact Lovable support if you need them rotated.
+
+### Restoring a deleted catalogue item
+
+Deletes cascade to gallery and variants. If you need to recover a deleted item, contact Lovable support for a point-in-time restore of the `catalogue_items`, `catalogue_item_images`, `catalogue_item_variants` rows. The `id` column is a UUID; keep any known IDs handy.
+
+### Redeploying after a bad release
+
+1. Lovable dashboard → project → History.
+2. Pick the last known-good commit → "Restore".
+3. Click **Publish**. Frontend is live within ~1 minute; edge functions and migrations deploy automatically.
+
+### Reading in-browser logs
+
+Every unexpected error is written to `localStorage['salem-logs']` (ring buffer, last 50 entries). Ask the reporter to open DevTools → Console and run:
+
+```js
+copy(JSON.stringify(JSON.parse(localStorage.getItem('salem-logs')), null, 2))
 ```
+
+then paste the result into the ticket.
+
+### Contacting Lovable support
+
+For anything that requires cloud-side action (DB restore, key rotation of service_role, larger instance, custom domain DNS): open a ticket at <https://lovable.dev/support>.
 
 ---
 
-## Deployment
+## Scaling notes
 
-The project is hosted on cloud hosting. To publish a new version, open the project dashboard and click **Share → Publish**. Edge functions and database migrations are deployed automatically.
+**Current defaults** are tuned for a Lusaka shop with hundreds of catalogue items, low hundreds of concurrent visitors, and phone-first traffic.
 
-To attach a custom domain, go to **Project → Settings → Domains → Connect Domain**.
+### When to upsize the Cloud instance
+
+Symptoms of an undersized instance: intermittent 500s from the Data API, slow dashboards despite fast queries, `db_health` reporting saturated CPU/RAM.
+
+- Lovable dashboard → Cloud → Overview → Advanced → pick a larger instance size.
+- No code change needed. Costs go up linearly; see <https://docs.lovable.dev/integrations/cloud>.
+
+### Database indexes (already applied)
+
+Hot-path indexes exist for: `catalogue_items(status, display_order)`, featured items, `catalogue_item_images(item_id, display_order)`, `catalogue_item_variants(item_id, display_order)`, `shop_orders(status, created_at DESC)`, `appointment_slots(slot_at)`, `garment_requests(status, created_at DESC)`, `messages(garment_request_id, created_at)`.
+
+Add new indexes via a migration; never `CREATE INDEX CONCURRENTLY` inside a migration transaction.
+
+### Pagination thresholds
+
+Admin lists page at 25 rows with **Load more**. Bump `PAGE_SIZE` in the page component if the shop routinely holds >500 items and admins scroll deep.
+
+### Images
+
+- Uploads are downscaled client-side to a 1600px longest edge, JPEG q=0.82 (`src/lib/imageCompress.ts`). This is the single biggest reliability win on 3G/4G.
+- Public buckets serve directly from Supabase Storage. For scale beyond ~1 GB/day egress consider fronting `catalogue` and `portfolio` with a CDN (Cloudflare R2 + Workers is the cheapest path); the app reads `getPublicUrl()` so swapping the base URL is a one-line change.
+
+### Low-bandwidth defaults
+
+- React Query: `retry: 2` with exponential backoff, `staleTime: 30s`, `refetchOnWindowFocus: false`.
+- Route-level code splitting via `React.lazy`; the landing page ships a minimal initial bundle.
+- `loading="lazy"` on all gallery images.
 
 ---
 
-## Security Notes
+## Supply-chain security
 
-- Roles are stored only in `user_roles` and validated server-side via `has_role()` SECURITY DEFINER functions.
-- Every table has RLS enabled; clients can only read/write their own rows, staff are gated by `is_staff()`.
-- Storage bucket `catalogue` is public-read, staff-write.
-- Authentication uses email + password (no anonymous sign-ups). Email verification is required by default.
+Every release produces signed SBOMs (CycloneDX + SPDX) via `.github/workflows/sbom.yml`, signed keyless with Sigstore cosign and logged to the public Rekor transparency log. Verification steps are in [`docs/sbom.md`](docs/sbom.md).
 
-## Supply Chain: SBOM + Signatures
+Vulnerable-dependency response process is documented in the same file. Dependabot (`.github/dependabot.yml`) opens weekly grouped PRs for minor/patch updates and immediate PRs for security advisories.
 
-Every release ships with a CycloneDX + SPDX **Software Bill of Materials**
-generated by `.github/workflows/sbom.yml`. Each SBOM is **signed with
-[Sigstore cosign](https://docs.sigstore.dev/) using keyless OIDC signing**
-(no long-lived keys; the signing event is recorded in the public Rekor
-transparency log).
+---
 
-Release assets per version:
+## Testing & CI
 
-- `salem-tailors-<v>.cdx.json` / `.cdx.xml` — CycloneDX 1.5 SBOM
-- `salem-tailors-<v>.spdx.json` — SPDX 2.3 SBOM
-- `*.sig` — cosign signature for the matching file
-- `*.pem` — short-lived Fulcio signing certificate
-- `SHA256SUMS.txt` — checksums for every artifact above
+- **Unit tests** — `bunx vitest run`. Setup at `src/test/setup.ts`; example test at `src/hooks/useShopOrderAlerts.test.tsx`.
+- **CI gates** — `.github/workflows/ci.yml` runs lint + typecheck + tests + build on every push and PR. Concurrency group cancels superseded runs.
+- **SBOM + signing** — `.github/workflows/sbom.yml` on tag/release/manual dispatch.
 
-Verify a downloaded SBOM:
+---
 
-```sh
-cosign verify-blob \
-  --certificate salem-tailors-<v>.cdx.json.pem \
-  --signature   salem-tailors-<v>.cdx.json.sig \
-  --certificate-identity-regexp "^https://github.com/.+/salem-tailors/.+" \
-  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-  salem-tailors-<v>.cdx.json
-```
+## Security memory
 
-See [`docs/sbom.md`](docs/sbom.md) for full details.
+Long-lived security guidance for this codebase is captured in `mem://security/security-memory` and is co-maintained with the Lovable agent. When a security decision is made (a finding ignored, a policy tightened, a threat model updated), that document is updated in the same PR.
 
+Latest security scan status: **all findings resolved as of 2026-06-26**.
+
+---
+
+## License
+
+Proprietary — Salem Tailors Lusaka. All rights reserved.
