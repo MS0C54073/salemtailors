@@ -318,6 +318,14 @@ const AdminCatalogue = () => {
             ))}
           </div>
         )}
+
+        {hasMore && (
+          <div className="flex justify-center pt-2">
+            <Button variant="outline" size="sm" disabled={loading} onClick={() => load(false)}>
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Load more'}
+            </Button>
+          </div>
+        )}
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
