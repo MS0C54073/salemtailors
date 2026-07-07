@@ -145,93 +145,99 @@ const AdminCatalogue = () => {
 
   const openNew = () => {
     setForm(emptyForm());
+    setSaveError(null);
     setOpen(true);
   };
 
   const openEdit = async (item: Item) => {
-    const [{ data: imgs }, { data: vars }] = await Promise.all([
-      supabase.from('catalogue_item_images').select('*').eq('item_id', item.id).order('display_order'),
-      supabase.from('catalogue_item_variants').select('*').eq('item_id', item.id).order('display_order'),
-    ]);
-    setForm({
-      id: item.id,
-      name: item.name,
-      description: item.description || '',
-      category_id: item.category_id || '',
-      base_price: item.base_price != null ? String(item.base_price) : '',
-      status: item.status,
-      stock_status: item.stock_status,
-      is_featured: item.is_featured,
-      primary_image_url: item.primary_image_url || '',
-      gallery: (imgs || []).map((i: any) => i.image_url),
-      variants: (vars || []).map((v: any) => ({
-        id: v.id, name: v.name, sku: v.sku, price_override: v.price_override, stock_status: v.stock_status,
-      })),
-    });
-    setOpen(true);
+    setSaveError(null);
+    try {
+      const [imgsRes, varsRes] = await Promise.all([
+        supabase.from('catalogue_item_images').select('*').eq('item_id', item.id).order('display_order'),
+        supabase.from('catalogue_item_variants').select('*').eq('item_id', item.id).order('display_order'),
+      ]);
+      if (imgsRes.error) throw imgsRes.error;
+      if (varsRes.error) throw varsRes.error;
+      setForm({
+        id: item.id,
+        name: item.name,
+        description: item.description || '',
+        category_id: item.category_id || '',
+        base_price: item.base_price != null ? String(item.base_price) : '',
+        status: item.status,
+        stock_status: item.stock_status,
+        is_featured: item.is_featured,
+        primary_image_url: item.primary_image_url || '',
+        gallery: (imgsRes.data || []).map((i: any) => i.image_url),
+        variants: (varsRes.data || []).map((v: any) => ({
+          id: v.id, name: v.name, sku: v.sku, price_override: v.price_override, stock_status: v.stock_status,
+        })),
+      });
+      setOpen(true);
+    } catch (err: any) {
+      logger.error('Catalogue openEdit failed', { itemId: item.id, message: err?.message });
+      toast.error(`Could not open item: ${err?.message || 'network error'}`);
+    }
   };
 
   const save = async () => {
-    if (!form.name.trim()) return toast.error('Name required');
-    if (!form.primary_image_url) return toast.error('Primary image required');
+    if (!form.name.trim()) { setSaveError('Name is required'); return; }
+    if (!form.primary_image_url) { setSaveError('A primary image is required'); return; }
+    setSaveError(null);
     setSaving(true);
-    const payload = {
-      name: form.name.trim(),
-      slug: form.id ? undefined : slugify(form.name) + '-' + Math.random().toString(36).slice(2, 6),
-      description: form.description.trim() || null,
-      category_id: form.category_id || null,
-      base_price: form.base_price ? Number(form.base_price) : null,
-      status: form.status,
-      stock_status: form.stock_status,
-      is_featured: form.is_featured,
-      primary_image_url: form.primary_image_url,
-    };
-
-    let itemId = form.id;
-    if (form.id) {
-      const { error } = await supabase.from('catalogue_items').update(payload).eq('id', form.id);
-      if (error) { setSaving(false); return toast.error(error.message); }
-    } else {
-      const { data, error } = await supabase.from('catalogue_items').insert(payload as any).select('id').single();
-      if (error || !data) { setSaving(false); return toast.error(error?.message || 'Failed'); }
-      itemId = data.id;
-    }
-
-    // Replace gallery
-    await supabase.from('catalogue_item_images').delete().eq('item_id', itemId);
-    if (form.gallery.length) {
-      await supabase.from('catalogue_item_images').insert(
-        form.gallery.map((url, i) => ({ item_id: itemId, image_url: url, display_order: i }))
-      );
-    }
-    // Replace variants
-    await supabase.from('catalogue_item_variants').delete().eq('item_id', itemId);
-    if (form.variants.length) {
-      await supabase.from('catalogue_item_variants').insert(
-        form.variants.map((v, i) => ({
-          item_id: itemId,
+    try {
+      // Atomic upsert via RPC — gallery + variants commit in one transaction.
+      // If any step fails, nothing is destroyed on the server.
+      const { data, error } = await (supabase.rpc as any)('upsert_catalogue_item', {
+        _item: {
+          id: form.id || null,
+          name: form.name.trim(),
+          description: form.description.trim() || null,
+          category_id: form.category_id || null,
+          base_price: form.base_price || null,
+          status: form.status,
+          stock_status: form.stock_status,
+          is_featured: form.is_featured,
+          primary_image_url: form.primary_image_url,
+        },
+        _images: form.gallery.map((url, i) => ({ image_url: url, display_order: i })),
+        _variants: form.variants.map((v, i) => ({
           name: v.name,
           sku: v.sku || null,
           price_override: v.price_override ?? null,
           stock_status: v.stock_status,
           display_order: i,
-        }))
-      );
+        })),
+      });
+      if (error) throw error;
+      logger.info('Catalogue item saved', { itemId: data, isNew: !form.id });
+      toast.success(form.id ? 'Updated' : 'Created');
+      setOpen(false);
+      load(true);
+    } catch (err: any) {
+      const msg = err?.message || 'Save failed';
+      logger.error('Catalogue save failed', { message: msg, formId: form.id });
+      setSaveError(msg);
+      toast.error(msg);
+      // Dialog stays open so the user can retry without losing their edits.
+    } finally {
+      setSaving(false);
     }
-
-    setSaving(false);
-    setOpen(false);
-    toast.success(form.id ? 'Updated' : 'Created');
-    load();
   };
 
   const remove = async (id: string) => {
     if (!confirm('Delete this item permanently?')) return;
-    const { error } = await supabase.from('catalogue_items').delete().eq('id', id);
-    if (error) return toast.error(error.message);
-    toast.success('Deleted');
-    load();
+    try {
+      const { error } = await supabase.from('catalogue_items').delete().eq('id', id);
+      if (error) throw error;
+      toast.success('Deleted');
+      load(true);
+    } catch (err: any) {
+      logger.error('Catalogue delete failed', { id, message: err?.message });
+      toast.error(err?.message || 'Delete failed');
+    }
   };
+
 
   const toggleFeatured = async (item: Item) => {
     await supabase.from('catalogue_items').update({ is_featured: !item.is_featured }).eq('id', item.id);
