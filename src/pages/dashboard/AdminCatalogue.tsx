@@ -10,8 +10,12 @@ import { Badge } from '@/components/ui/badge';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
-import { Plus, Star, Trash2, Image as ImageIcon, Loader2, Package, X, Pencil } from 'lucide-react';
+import { Plus, Star, Trash2, Image as ImageIcon, Loader2, Package, X, Pencil, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { compressImage } from '@/lib/imageCompress';
+import { logger } from '@/lib/logger';
+
+const PAGE_SIZE = 25;
 
 type Category = { id: string; name: string; slug: string };
 type Variant = { id?: string; name: string; sku?: string; price_override?: number | null; stock_status: 'in_stock' | 'low_stock' | 'out_of_stock' };
@@ -53,34 +57,63 @@ const AdminCatalogue = () => {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(emptyForm());
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const load = async () => {
-    const [{ data: it }, { data: cat }] = await Promise.all([
-      supabase.from('catalogue_items').select('*').order('display_order').order('created_at', { ascending: false }),
-      supabase.from('catalogue_categories').select('*').eq('is_active', true).order('display_order'),
-    ]);
-    setItems((it as Item[]) || []);
-    setCategories((cat as Category[]) || []);
+  const load = async (reset = true) => {
+    setLoading(true);
+    const nextPage = reset ? 0 : page + 1;
+    const from = nextPage * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    try {
+      const [itemsRes, catRes] = await Promise.all([
+        supabase
+          .from('catalogue_items')
+          .select('*')
+          .order('display_order')
+          .order('created_at', { ascending: false })
+          .range(from, to),
+        reset
+          ? supabase.from('catalogue_categories').select('*').eq('is_active', true).order('display_order')
+          : Promise.resolve({ data: null, error: null } as const),
+      ]);
+      if (itemsRes.error) throw itemsRes.error;
+      const rows = (itemsRes.data as Item[]) || [];
+      setItems(prev => (reset ? rows : [...prev, ...rows]));
+      setHasMore(rows.length === PAGE_SIZE);
+      setPage(nextPage);
+      if (reset && catRes.data) setCategories(catRes.data as Category[]);
+    } catch (err: any) {
+      logger.error('Catalogue load failed', { message: err?.message });
+      toast.error(`Could not load catalogue: ${err?.message || 'network error'}`);
+    } finally {
+      setLoading(false);
+    }
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(true); }, []);
 
-  const uploadFile = async (file: File): Promise<string | null> => {
-    if (file.size > 15 * 1024 * 1024) {
-      toast.error(`${file.name} is over 15MB. Please use a smaller image.`);
+  const uploadFile = async (rawFile: File): Promise<string | null> => {
+    if (!rawFile.type.startsWith('image/')) {
+      toast.error(`${rawFile.name} is not an image.`);
       return null;
     }
-    if (!file.type.startsWith('image/')) {
-      toast.error(`${file.name} is not an image.`);
+    if (rawFile.size > 20 * 1024 * 1024) {
+      toast.error(`${rawFile.name} is over 20MB. Please use a smaller image.`);
       return null;
     }
-    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+    // Downscale huge phone photos before upload — critical on 3G/4G.
+    const file = await compressImage(rawFile);
+    const ext = 'jpg';
     const path = `items/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
     const { error } = await supabase.storage.from('catalogue').upload(path, file, {
       cacheControl: '3600',
-      contentType: file.type,
+      contentType: file.type || 'image/jpeg',
       upsert: false,
     });
     if (error) {
+      logger.error('Storage upload failed', { path, message: error.message });
       toast.error(`Upload failed: ${error.message}`);
       return null;
     }
@@ -112,97 +145,110 @@ const AdminCatalogue = () => {
 
   const openNew = () => {
     setForm(emptyForm());
+    setSaveError(null);
     setOpen(true);
   };
 
   const openEdit = async (item: Item) => {
-    const [{ data: imgs }, { data: vars }] = await Promise.all([
-      supabase.from('catalogue_item_images').select('*').eq('item_id', item.id).order('display_order'),
-      supabase.from('catalogue_item_variants').select('*').eq('item_id', item.id).order('display_order'),
-    ]);
-    setForm({
-      id: item.id,
-      name: item.name,
-      description: item.description || '',
-      category_id: item.category_id || '',
-      base_price: item.base_price != null ? String(item.base_price) : '',
-      status: item.status,
-      stock_status: item.stock_status,
-      is_featured: item.is_featured,
-      primary_image_url: item.primary_image_url || '',
-      gallery: (imgs || []).map((i: any) => i.image_url),
-      variants: (vars || []).map((v: any) => ({
-        id: v.id, name: v.name, sku: v.sku, price_override: v.price_override, stock_status: v.stock_status,
-      })),
-    });
-    setOpen(true);
+    setSaveError(null);
+    try {
+      const [imgsRes, varsRes] = await Promise.all([
+        supabase.from('catalogue_item_images').select('*').eq('item_id', item.id).order('display_order'),
+        supabase.from('catalogue_item_variants').select('*').eq('item_id', item.id).order('display_order'),
+      ]);
+      if (imgsRes.error) throw imgsRes.error;
+      if (varsRes.error) throw varsRes.error;
+      setForm({
+        id: item.id,
+        name: item.name,
+        description: item.description || '',
+        category_id: item.category_id || '',
+        base_price: item.base_price != null ? String(item.base_price) : '',
+        status: item.status,
+        stock_status: item.stock_status,
+        is_featured: item.is_featured,
+        primary_image_url: item.primary_image_url || '',
+        gallery: (imgsRes.data || []).map((i: any) => i.image_url),
+        variants: (varsRes.data || []).map((v: any) => ({
+          id: v.id, name: v.name, sku: v.sku, price_override: v.price_override, stock_status: v.stock_status,
+        })),
+      });
+      setOpen(true);
+    } catch (err: any) {
+      logger.error('Catalogue openEdit failed', { itemId: item.id, message: err?.message });
+      toast.error(`Could not open item: ${err?.message || 'network error'}`);
+    }
   };
 
   const save = async () => {
-    if (!form.name.trim()) return toast.error('Name required');
-    if (!form.primary_image_url) return toast.error('Primary image required');
+    if (!form.name.trim()) { setSaveError('Name is required'); return; }
+    if (!form.primary_image_url) { setSaveError('A primary image is required'); return; }
+    setSaveError(null);
     setSaving(true);
-    const payload = {
-      name: form.name.trim(),
-      slug: form.id ? undefined : slugify(form.name) + '-' + Math.random().toString(36).slice(2, 6),
-      description: form.description.trim() || null,
-      category_id: form.category_id || null,
-      base_price: form.base_price ? Number(form.base_price) : null,
-      status: form.status,
-      stock_status: form.stock_status,
-      is_featured: form.is_featured,
-      primary_image_url: form.primary_image_url,
-    };
-
-    let itemId = form.id;
-    if (form.id) {
-      const { error } = await supabase.from('catalogue_items').update(payload).eq('id', form.id);
-      if (error) { setSaving(false); return toast.error(error.message); }
-    } else {
-      const { data, error } = await supabase.from('catalogue_items').insert(payload as any).select('id').single();
-      if (error || !data) { setSaving(false); return toast.error(error?.message || 'Failed'); }
-      itemId = data.id;
-    }
-
-    // Replace gallery
-    await supabase.from('catalogue_item_images').delete().eq('item_id', itemId);
-    if (form.gallery.length) {
-      await supabase.from('catalogue_item_images').insert(
-        form.gallery.map((url, i) => ({ item_id: itemId, image_url: url, display_order: i }))
-      );
-    }
-    // Replace variants
-    await supabase.from('catalogue_item_variants').delete().eq('item_id', itemId);
-    if (form.variants.length) {
-      await supabase.from('catalogue_item_variants').insert(
-        form.variants.map((v, i) => ({
-          item_id: itemId,
+    try {
+      // Atomic upsert via RPC — gallery + variants commit in one transaction.
+      // If any step fails, nothing is destroyed on the server.
+      const { data, error } = await (supabase.rpc as any)('upsert_catalogue_item', {
+        _item: {
+          id: form.id || null,
+          name: form.name.trim(),
+          description: form.description.trim() || null,
+          category_id: form.category_id || null,
+          base_price: form.base_price || null,
+          status: form.status,
+          stock_status: form.stock_status,
+          is_featured: form.is_featured,
+          primary_image_url: form.primary_image_url,
+        },
+        _images: form.gallery.map((url, i) => ({ image_url: url, display_order: i })),
+        _variants: form.variants.map((v, i) => ({
           name: v.name,
           sku: v.sku || null,
           price_override: v.price_override ?? null,
           stock_status: v.stock_status,
           display_order: i,
-        }))
-      );
+        })),
+      });
+      if (error) throw error;
+      logger.info('Catalogue item saved', { itemId: data, isNew: !form.id });
+      toast.success(form.id ? 'Updated' : 'Created');
+      setOpen(false);
+      load(true);
+    } catch (err: any) {
+      const msg = err?.message || 'Save failed';
+      logger.error('Catalogue save failed', { message: msg, formId: form.id });
+      setSaveError(msg);
+      toast.error(msg);
+      // Dialog stays open so the user can retry without losing their edits.
+    } finally {
+      setSaving(false);
     }
-
-    setSaving(false);
-    setOpen(false);
-    toast.success(form.id ? 'Updated' : 'Created');
-    load();
   };
 
   const remove = async (id: string) => {
     if (!confirm('Delete this item permanently?')) return;
-    const { error } = await supabase.from('catalogue_items').delete().eq('id', id);
-    if (error) return toast.error(error.message);
-    toast.success('Deleted');
-    load();
+    try {
+      const { error } = await supabase.from('catalogue_items').delete().eq('id', id);
+      if (error) throw error;
+      toast.success('Deleted');
+      load(true);
+    } catch (err: any) {
+      logger.error('Catalogue delete failed', { id, message: err?.message });
+      toast.error(err?.message || 'Delete failed');
+    }
   };
 
+
   const toggleFeatured = async (item: Item) => {
-    await supabase.from('catalogue_items').update({ is_featured: !item.is_featured }).eq('id', item.id);
-    load();
+    // Optimistic update — the star toggle feels instant even on 3G.
+    setItems(prev => prev.map(x => x.id === item.id ? { ...x, is_featured: !x.is_featured } : x));
+    const { error } = await supabase.from('catalogue_items').update({ is_featured: !item.is_featured }).eq('id', item.id);
+    if (error) {
+      // Roll back on failure.
+      setItems(prev => prev.map(x => x.id === item.id ? { ...x, is_featured: item.is_featured } : x));
+      logger.error('Toggle featured failed', { id: item.id, message: error.message });
+      toast.error(error.message);
+    }
   };
 
   const addVariant = () => setForm(f => ({ ...f, variants: [...f.variants, { name: '', stock_status: 'in_stock' }] }));
@@ -272,6 +318,14 @@ const AdminCatalogue = () => {
             ))}
           </div>
         )}
+
+        {hasMore && (
+          <div className="flex justify-center pt-2">
+            <Button variant="outline" size="sm" disabled={loading} onClick={() => load(false)}>
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Load more'}
+            </Button>
+          </div>
+        )}
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -280,6 +334,12 @@ const AdminCatalogue = () => {
             <DialogTitle className="font-serif">{form.id ? 'Edit Item' : 'New Item'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {saveError && (
+              <div className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-2 text-xs text-destructive">
+                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                <span>{saveError}</span>
+              </div>
+            )}
             {/* Primary image */}
             <div>
               <Label>Primary image *</Label>

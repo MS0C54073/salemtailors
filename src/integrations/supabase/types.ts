@@ -769,6 +769,10 @@ export type Database = {
           whatsapp_sent: boolean
         }[]
       }
+      upsert_catalogue_item: {
+        Args: { _images: Json; _item: Json; _variants: Json }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "super_admin" | "admin" | "sub_admin" | "client"
