@@ -240,8 +240,15 @@ const AdminCatalogue = () => {
 
 
   const toggleFeatured = async (item: Item) => {
-    await supabase.from('catalogue_items').update({ is_featured: !item.is_featured }).eq('id', item.id);
-    load();
+    // Optimistic update — the star toggle feels instant even on 3G.
+    setItems(prev => prev.map(x => x.id === item.id ? { ...x, is_featured: !x.is_featured } : x));
+    const { error } = await supabase.from('catalogue_items').update({ is_featured: !item.is_featured }).eq('id', item.id);
+    if (error) {
+      // Roll back on failure.
+      setItems(prev => prev.map(x => x.id === item.id ? { ...x, is_featured: item.is_featured } : x));
+      logger.error('Toggle featured failed', { id: item.id, message: error.message });
+      toast.error(error.message);
+    }
   };
 
   const addVariant = () => setForm(f => ({ ...f, variants: [...f.variants, { name: '', stock_status: 'in_stock' }] }));
