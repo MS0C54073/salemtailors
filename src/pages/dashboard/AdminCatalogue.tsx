@@ -10,8 +10,12 @@ import { Badge } from '@/components/ui/badge';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
-import { Plus, Star, Trash2, Image as ImageIcon, Loader2, Package, X, Pencil } from 'lucide-react';
+import { Plus, Star, Trash2, Image as ImageIcon, Loader2, Package, X, Pencil, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { compressImage } from '@/lib/imageCompress';
+import { logger } from '@/lib/logger';
+
+const PAGE_SIZE = 25;
 
 type Category = { id: string; name: string; slug: string };
 type Variant = { id?: string; name: string; sku?: string; price_override?: number | null; stock_status: 'in_stock' | 'low_stock' | 'out_of_stock' };
