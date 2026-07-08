@@ -292,16 +292,17 @@ const Index = () => {
       </section>
 
       {/* Animated workshop scene */}
-      <section className="py-12 px-4 bg-background">
+      <section className="scroll-mt-24 py-16 md:py-20 px-4 bg-background">
         <div className="container">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-6"
+            className="text-center mb-8 md:mb-10"
           >
-            <h2 className="font-serif text-3xl font-bold text-foreground mb-2">A Day at Salem Tailors</h2>
-            <p className="text-muted-foreground">From the workshop to your wardrobe</p>
+            <span className="block text-[11px] uppercase tracking-[0.3em] text-primary font-medium mb-2">Behind the scenes</span>
+            <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-3">A Day at Salem Tailors</h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">From the workshop to your wardrobe — every piece, hand-crafted step by step.</p>
           </motion.div>
           <TailorScene />
         </div>
