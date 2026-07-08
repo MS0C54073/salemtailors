@@ -88,7 +88,7 @@ const stages: Stage[] = [
     processLabel: 'Taking precise measurements',
     steps: ['Stretching the tape', 'Recording numbers', 'Cross-checking', 'Saving the profile'],
     processGradient: 'from-[hsl(var(--accent))] to-[hsl(var(--earth))]',
-    resultGradient: 'from-[hsl(var(--cream))] via-[hsl(var(--gold-light))] to-[hsl(var(--gold))]',
+    resultGradient: 'from-[hsl(var(--earth))] via-[hsl(var(--accent))] to-[hsl(var(--gold))]',
     pattern: 'measure',
   },
 ];
@@ -191,7 +191,7 @@ const ChitengeProcess = () => (
     </defs>
     {/* Fabric on the bench */}
     <motion.path
-      d="M60 230 Q200 200 340 230 L340 270 Q200 250 60 270 Z"
+      d="M50 120 Q200 90 350 120 L350 210 Q200 190 50 210 Z"
       fill="url(#chit-bg)"
       stroke={FG}
       strokeWidth="1.5"
@@ -201,7 +201,7 @@ const ChitengeProcess = () => (
     />
     {/* Cutting line being drawn */}
     <motion.path
-      d="M80 245 Q200 220 320 245"
+      d="M70 145 Q200 118 330 145"
       stroke={FG}
       strokeWidth="2"
       strokeDasharray="5 4"
@@ -213,11 +213,11 @@ const ChitengeProcess = () => (
     {/* Animated scissors travelling along the cut */}
     <motion.g
       initial={{ x: 0, y: 0 }}
-      animate={{ x: [0, 240, 240, 0], y: [0, -10, -10, 0], rotate: [0, 8, 8, 0] }}
+      animate={{ x: [0, 240, 240, 0], y: [0, -8, -8, 0], rotate: [0, 8, 8, 0] }}
       transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', times: [0, 0.5, 0.85, 1] }}
-      style={{ originX: '80px', originY: '245px' }}
+      style={{ originX: '70px', originY: '145px' }}
     >
-      <foreignObject x="64" y="220" width="32" height="32">
+      <foreignObject x="54" y="120" width="32" height="32">
         <Scissors className="h-7 w-7 text-primary-foreground drop-shadow" />
       </foreignObject>
     </motion.g>
@@ -226,11 +226,11 @@ const ChitengeProcess = () => (
       <motion.circle
         key={cx}
         cx={cx}
-        cy="240"
+        cy="150"
         r="2"
         fill={FG}
         opacity="0.7"
-        animate={{ cy: [240, 270], opacity: [0.7, 0] }}
+        animate={{ cy: [150, 210], opacity: [0.7, 0] }}
         transition={{ duration: 1.6, repeat: Infinity, delay: i * 0.35, ease: 'easeIn' }}
       />
     ))}
