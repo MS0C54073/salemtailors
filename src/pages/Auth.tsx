@@ -180,6 +180,13 @@ const Auth = () => {
               {isLogin ? 'Sign up' : 'Sign in'}
             </button>
           </p>
+
+          <p className="text-center text-[11px] text-muted-foreground/60 mt-4">
+            Salem Tailors staff?{' '}
+            <Link to="/admin" className="hover:text-foreground underline underline-offset-2">
+              Sign in to the admin portal
+            </Link>
+          </p>
         </div>
       </div>
     </div>
