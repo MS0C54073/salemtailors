@@ -88,7 +88,7 @@ const stages: Stage[] = [
     processLabel: 'Taking precise measurements',
     steps: ['Stretching the tape', 'Recording numbers', 'Cross-checking', 'Saving the profile'],
     processGradient: 'from-[hsl(var(--accent))] to-[hsl(var(--earth))]',
-    resultGradient: 'from-[hsl(var(--cream))] via-[hsl(var(--gold-light))] to-[hsl(var(--gold))]',
+    resultGradient: 'from-[hsl(var(--earth))] via-[hsl(var(--accent))] to-[hsl(var(--gold))]',
     pattern: 'measure',
   },
 ];
