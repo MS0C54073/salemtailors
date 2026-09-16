@@ -173,7 +173,12 @@ const PatternArt = ({ pattern }: { pattern: Pattern }) => {
 const FG = 'hsl(var(--primary-foreground))';
 
 const Workbench = ({ children }: { children: React.ReactNode }) => (
-  <svg viewBox="0 0 400 300" className="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid slice" aria-hidden>
+  <svg
+    viewBox="0 0 400 300"
+    className="absolute inset-0 h-full w-full"
+    preserveAspectRatio="xMidYMid meet"
+    aria-hidden
+  >
     {/* Workbench surface */}
     <rect x="0" y="220" width="400" height="80" fill={FG} opacity="0.08" />
     <line x1="0" y1="220" x2="400" y2="220" stroke={FG} strokeWidth="1" opacity="0.3" />
@@ -457,7 +462,7 @@ const ProcessScene = ({ stage, stageDurationMs }: { stage: Stage; stageDurationM
   return (
     <div className={`relative w-full h-full bg-gradient-to-br ${stage.processGradient} overflow-hidden flex flex-col`}>
       {/* Top: animation area */}
-      <div className="relative flex-1 min-h-0 overflow-hidden">
+      <div className="relative h-[230px] shrink-0 overflow-hidden sm:h-[270px] md:h-auto md:min-h-0 md:flex-1">
         {/* Subtle grid */}
         <svg className="absolute inset-0 w-full h-full opacity-15" aria-hidden>
           <defs>
@@ -469,7 +474,11 @@ const ProcessScene = ({ stage, stageDurationMs }: { stage: Stage; stageDurationM
         </svg>
 
         {/* Animated workbench scene */}
-        <Scene />
+        <div className="absolute inset-0 flex items-center justify-center px-2 sm:px-4 md:px-6">
+          <div className="relative h-full w-full max-w-2xl">
+            <Scene />
+          </div>
+        </div>
       </div>
 
       {/* Bottom panel: label + step checklist (solid, no overlap with animation) */}
@@ -610,7 +619,7 @@ const TailorScene = () => {
     <div className="relative w-full">
       <div className="grid md:grid-cols-2 rounded-2xl overflow-hidden border border-border shadow-warm bg-card">
         {/* Left — Process */}
-        <div className="relative aspect-[4/3] md:aspect-auto md:min-h-[380px]">
+        <div className="relative min-h-[430px] sm:min-h-[470px] md:min-h-[430px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={`p-${stage.id}`}

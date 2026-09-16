@@ -252,12 +252,13 @@ const Index = () => {
             {services.map((s, i) => (
               <motion.div
                 key={s.title}
+                id={s.title === 'Measurements' ? 'measurements' : undefined}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.07, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                 whileHover={{ y: -4 }}
-                className="group relative bg-card rounded-xl p-3.5 sm:p-5 border border-border hover:border-primary/40 hover:shadow-elegant transition-all overflow-hidden"
+                className="group relative scroll-mt-20 bg-card rounded-xl p-3.5 sm:p-5 border border-border hover:border-primary/40 hover:shadow-elegant transition-all overflow-hidden"
               >
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-gradient-to-br from-gold/10 to-terracotta/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -292,7 +293,7 @@ const Index = () => {
       </section>
 
       {/* Animated workshop scene */}
-      <section className="scroll-mt-24 py-16 md:py-20 px-4 bg-background">
+      <section id="a-day-at-salem-tailors" className="scroll-mt-20 py-16 md:py-20 px-4 bg-background">
         <div className="container">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
